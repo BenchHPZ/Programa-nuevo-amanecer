@@ -1,0 +1,216 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /*
+   * `--font-sans: var(--font-sans)` se referenciaba a sí misma y quedaba
+   * vacía: la utilidad `font-sans` no resolvía a nada y TODA la aplicación
+   * renderizaba en la fuente por defecto del navegador (Times New Roman),
+   * pese a que layout.tsx sí descargaba Geist en cada carga.
+   *
+   * Los nombres correctos son los que define next/font en layout.tsx.
+   */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-montserrat);
+
+  --color-marca-amarillo: var(--marca-amarillo);
+  --color-marca-turquesa: var(--marca-turquesa);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Paleta de marca — valores muestreados del logotipo original.
+   Referencia completa y reglas de uso en docs/MANUAL-IMAGEN.md §3.
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Marca */
+  --marca-amarillo: oklch(0.838 0.172 86.1);   /* #FBC000 */
+  --marca-turquesa: oklch(0.652 0.111 202.5);  /* #00A3AD */
+
+  /* Escala turquesa de interfaz */
+  --turquesa-50: oklch(0.980 0.016 196.9);   /* #EDFCFC */
+  --turquesa-100: oklch(0.942 0.033 201.2);  /* #D3F3F5 */
+  --turquesa-300: oklch(0.820 0.089 200.1);  /* #79D6DB */
+  --turquesa-600: oklch(0.577 0.098 202.9);  /* #008A93 — 4.15:1 s/blanco */
+  --turquesa-700: oklch(0.500 0.085 202.3);  /* #007178 — 5.78:1, texto */
+  --turquesa-800: oklch(0.422 0.072 201.4);  /* #00595E */
+
+  /* ── Mapeo a los tokens semánticos de shadcn ──
+   *
+   * El amarillo NUNCA es --primary: da 1.66:1 sobre blanco. Es color de
+   * superficie, con texto oscuro encima (manual §3, regla 1). Por eso se
+   * queda como `--marca-amarillo` y no entra en ningún par texto/fondo.
+   */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.218 0 90);            /* #1A1A1A */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.218 0 90);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.218 0 90);
+
+  /*
+   * DESVIACIÓN DELIBERADA del manual, que asigna `turquesa-600` al botón
+   * primario. Medido en el navegador, 600 con texto blanco da **4.15:1**, y
+   * WCAG AA exige 4.5:1 para texto normal — la etiqueta de un botón shadcn
+   * es texto de 14 px, no texto grande.
+   *
+   * El propio manual fija 4.5:1 como la barra y dice que el contraste no es
+   * estética (§3, regla 2), así que aquí manda su principio por encima de su
+   * tabla. `turquesa-700` da 5.78:1 y la diferencia visual es mínima.
+   * Conviene corregirlo también en el manual.
+   */
+  --primary: var(--turquesa-700);             /* #007178 — 5.78:1 con blanco */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.981 0.006 197.1);      /* #F4FAFA, fondo de sección */
+  --secondary-foreground: var(--turquesa-800);
+  --muted: oklch(0.981 0.006 197.1);
+  --muted-foreground: oklch(0.512 0.020 205.8); /* #5A6A6C */
+  --accent: var(--turquesa-100);
+  --accent-foreground: var(--turquesa-800);
+
+  /* El rojo de error no se negocia por identidad visual. */
+  --destructive: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.915 0.010 204.9);         /* #DCE5E6 */
+  --input: oklch(0.915 0.010 204.9);
+  --ring: var(--turquesa-600);
+
+  --chart-1: var(--turquesa-600);
+  --chart-2: var(--marca-amarillo);
+  --chart-3: var(--turquesa-300);
+  --chart-4: var(--turquesa-800);
+  --chart-5: oklch(0.512 0.020 205.8);
+
+  --radius: 0.625rem;
+
+  --sidebar: oklch(0.981 0.006 197.1);
+  --sidebar-foreground: oklch(0.218 0 90);
+  --sidebar-primary: var(--turquesa-600);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: var(--turquesa-100);
+  --sidebar-accent-foreground: var(--turquesa-800);
+  --sidebar-border: oklch(0.915 0.010 204.9);
+  --sidebar-ring: var(--turquesa-600);
+}
+
+/*
+ * Fondo oscuro: el manual obliga a usar las versiones aclaradas de ambos
+ * colores (§3). Los de fondo claro se apagan sobre oscuro.
+ *
+ * Ojo con --primary-foreground: el turquesa aclarado es demasiado claro para
+ * llevar texto blanco encima (~2.5:1). Encima va texto oscuro.
+ */
+.dark {
+  --marca-amarillo: oklch(0.869 0.177 93.6);  /* #FBD00A */
+  --marca-turquesa: oklch(0.694 0.109 203.4); /* #2AB0BB */
+
+  --background: oklch(0.183 0.008 202);
+  --foreground: oklch(0.975 0.003 197);
+  --card: oklch(0.235 0.010 202);
+  --card-foreground: oklch(0.975 0.003 197);
+  --popover: oklch(0.235 0.010 202);
+  --popover-foreground: oklch(0.975 0.003 197);
+
+  --primary: var(--marca-turquesa);
+  --primary-foreground: oklch(0.183 0.008 202);
+  --secondary: oklch(0.290 0.012 202);
+  --secondary-foreground: oklch(0.975 0.003 197);
+  --muted: oklch(0.290 0.012 202);
+  --muted-foreground: oklch(0.730 0.018 203);
+  --accent: oklch(0.290 0.012 202);
+  --accent-foreground: oklch(0.975 0.003 197);
+
+  --destructive: oklch(0.704 0.191 22.216);
+
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: var(--marca-turquesa);
+
+  --chart-1: var(--marca-turquesa);
+  --chart-2: var(--marca-amarillo);
+  --chart-3: var(--turquesa-300);
+  --chart-4: oklch(0.730 0.018 203);
+  --chart-5: oklch(0.560 0.030 203);
+
+  --sidebar: oklch(0.235 0.010 202);
+  --sidebar-foreground: oklch(0.975 0.003 197);
+  --sidebar-primary: var(--marca-turquesa);
+  --sidebar-primary-foreground: oklch(0.183 0.008 202);
+  --sidebar-accent: oklch(0.290 0.012 202);
+  --sidebar-accent-foreground: oklch(0.975 0.003 197);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: var(--marca-turquesa);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+
+  /*
+   * Montserrat para títulos (§4). El cuerpo se queda en Geist: distingue
+   * 0/O y 1/l/I, que es lo que importa al leer folios, CURP y teléfonos.
+   */
+  h1, h2 {
+    font-family: var(--font-heading), var(--font-sans);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  /*
+   * Cifras tabulares donde se comparan números en columna: folios, conteos
+   * del tablero y tablas del padrón. Sin esto los dígitos bailan y cuesta
+   * cotejar una lista impresa contra la pantalla.
+   */
+  .tabular-nums, table {
+    font-variant-numeric: tabular-nums;
+  }
+}

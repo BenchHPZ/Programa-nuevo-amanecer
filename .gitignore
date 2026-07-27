@@ -1,0 +1,62 @@
+# ─────────────────────────────────────────────────────────────
+#  DATOS PERSONALES — nada real entra al repositorio
+# ─────────────────────────────────────────────────────────────
+privado/*
+!privado/LEEME.md
+
+*.local.json
+*.csv
+*.xlsx
+*.xls
+*.dump
+*.sql.gz
+respaldos/
+exportaciones/
+
+# Excepción: la plantilla del formato de contingencia (RF-193) solo tiene
+# encabezados y una fila inventada. Tiene que viajar EN el repositorio —
+# si se queda fuera, quien clone el proyecto el día de la jornada no la
+# tendrá, que es justo cuando hace falta.
+!config/plantilla-contingencia.csv
+
+# Escaneos y fotos de pacientes
+*.pdf
+!docs/**/*.pdf
+
+# ─────────────────────────────────────────────────────────────
+#  Secretos
+# ─────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─────────────────────────────────────────────────────────────
+#  Node / Next.js
+# ─────────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# ─────────────────────────────────────────────────────────────
+#  Supabase
+# ─────────────────────────────────────────────────────────────
+supabase/.branches/
+supabase/.temp/
+
+# ─────────────────────────────────────────────────────────────
+#  Herramientas y sistema
+# ─────────────────────────────────────────────────────────────
+.vercel
+coverage/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.claude/

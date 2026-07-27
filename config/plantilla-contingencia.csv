@@ -1,0 +1,2 @@
+nombre,apellido_paterno,apellido_materno,fecha_nacimiento,sexo,curp,telefono,municipio,estado_geografico,responsable_nombre,responsable_apellido_paterno,responsable_apellido_materno,responsable_telefono,parentesco
+Ejemplo,Apellido,Segundo,2020-05-14,M,,4770000000,Leon,Guanajuato,Adulto,Apellido,Segundo,4770000000,madre

@@ -1,0 +1,98 @@
+#!/bin/sh
+# ─────────────────────────────────────────────────────────────────────────────
+#  Guardia pre-commit — Programa Nuevo Amanecer
+#
+#  Impide que datos personales entren al repositorio. Ver RNF-13 en
+#  docs/REQUERIMIENTOS.md y docs/CUMPLIMIENTO.md.
+#
+#  Se activa con:  git config core.hooksPath .githooks
+# ─────────────────────────────────────────────────────────────────────────────
+
+set -u
+
+ROJO=$(printf '\033[31m')
+AMARILLO=$(printf '\033[33m')
+RESET=$(printf '\033[0m')
+
+# CURP: 4 letras + 6 dígitos + H/M + 5 letras + 2 alfanuméricos
+CURP='[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9]{2}'
+
+# RFC de persona física (4 letras) o moral (3 letras) + fecha + homoclave
+RFC='[A-Z]{3,4}[0-9]{6}[A-Z0-9]{3}'
+
+# Teléfono de 10 dígitos, solo cuando aparece junto a una palabra que lo delata.
+# Sin ese contexto habría demasiados falsos positivos (ids, timestamps, hashes).
+TEL='([Tt]el|TEL|[Tt]el[eé]fono|[Cc]elular|[Mm][oó]vil|[Pp]hone)[^0-9]{0,15}[0-9]{10}'
+
+# Válvula de escape, por línea. Las semillas sintéticas necesitan teléfonos de
+# 10 dígitos de verdad para poder ejercitar la búsqueda por teléfono (RF-110),
+# y el guardia no puede distinguir un teléfono inventado de uno real. Sin esta
+# salida, `supabase/seed.sql` bloquearía todo commit y la costumbre acabaría
+# siendo `--no-verify`, que es peor que no tener guardia.
+#
+# Es deliberadamente incómoda: hay que marcar CADA línea a mano, y la marca
+# queda visible en el diff para quien revise. No exime archivos completos.
+MARCA_SINTETICA='\[semilla-sintetica\]'
+
+hallazgos=0
+
+archivos=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$archivos" ] && exit 0
+
+for archivo in $archivos; do
+  # Binarios y el propio guardia quedan fuera
+  case "$archivo" in
+    .githooks/pre-commit)                       continue ;;
+    *.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico)      continue ;;
+    *.pdf|*.woff|*.woff2|*.ttf|*.eot)           continue ;;
+    *.zip|*.gz|*.dump)                          continue ;;
+  esac
+
+  contenido=$(git show ":$archivo" 2>/dev/null) || continue
+  contenido=$(printf '%s\n' "$contenido" | grep -v "$MARCA_SINTETICA")
+
+  reportar() {
+    etiqueta=$1
+    patron=$2
+    coincidencias=$(printf '%s\n' "$contenido" | grep -nE "$patron" 2>/dev/null | head -3)
+    if [ -n "$coincidencias" ]; then
+      printf '%s✗ %s en %s%s\n' "$ROJO" "$etiqueta" "$archivo" "$RESET"
+      printf '%s\n' "$coincidencias" | sed 's/^/      /'
+      hallazgos=$((hallazgos + 1))
+    fi
+  }
+
+  reportar "Posible CURP"      "$CURP"
+  reportar "Posible RFC"       "$RFC"
+  reportar "Posible teléfono"  "$TEL"
+done
+
+if [ "$hallazgos" -gt 0 ]; then
+  cat <<'MENSAJE'
+
+──────────────────────────────────────────────────────────────
+  COMMIT BLOQUEADO — posibles datos personales
+──────────────────────────────────────────────────────────────
+
+  Este proyecto maneja datos personales sensibles de salud, en
+  su mayoría de menores de edad. Nada real entra al repositorio.
+
+  Qué hacer:
+    · Datos reales    → muévelos a privado/ (excluido de git)
+    · Datos de prueba → invéntalos, no los copies de la operación
+    · Exportaciones   → privado/exportaciones/
+
+  Si la línea es una semilla sintética inventada, márcala así
+  (una por una, queda visible en el diff):
+    ... -- [semilla-sintetica]
+
+  Si es un falso positivo de otro tipo, documenta por qué y usa:
+    git commit --no-verify
+
+  Ver docs/CUMPLIMIENTO.md
+
+MENSAJE
+  exit 1
+fi
+
+exit 0

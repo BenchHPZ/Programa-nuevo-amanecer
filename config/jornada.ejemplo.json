@@ -1,0 +1,39 @@
+{
+  "_comentario": "Plantilla de configuración de jornada. Datos FICTICIOS. La configuración real vive en privado/jornada.json, que está excluido de git.",
+
+  "clave": "2026B",
+  "nombre": "Jornada de ejemplo 2026-B",
+
+  "sede": {
+    "nombre": "Hospital de ejemplo",
+    "ciudad": "Ciudad Ejemplo",
+    "estado": "Estado Ejemplo",
+    "direccion": "Calle Ejemplo 000, Colonia Ejemplo"
+  },
+
+  "etapa1": {
+    "fecha_inicio": "2026-01-01",
+    "fecha_fin": "2026-01-05",
+    "horario": "08:00 a 17:00",
+    "puestos_captura": 5
+  },
+
+  "etapa2": {
+    "fecha": "2026-02-15",
+    "horario": "07:00 a 20:00"
+  },
+
+  "folio": {
+    "prefijo": "NA",
+    "formato": "{prefijo}-{jornada}-{servicio}-{consecutivo:0000}",
+    "servicios": {
+      "cirugia": "C",
+      "laser": "L"
+    }
+  },
+
+  "contacto": {
+    "telefono": "000-000-0000",
+    "correo": "contacto@ejemplo.org"
+  }
+}
