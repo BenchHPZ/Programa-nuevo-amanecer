@@ -16,7 +16,14 @@ const ETIQUETA_CONSENTIMIENTO: Record<Exclude<TipoConsentimiento, "consentimient
 
 const TIPOS_CONSENTIMIENTO = Object.keys(ETIQUETA_CONSENTIMIENTO) as (keyof typeof ETIQUETA_CONSENTIMIENTO)[];
 
-const ETIQUETA_DOCUMENTO: Record<TipoDocumento, string> = {
+/**
+ * `foto_paciente` no aparece aquí a propósito: la sube el médico desde
+ * /dictamen, no el capturista — tiene su propia tarjeta de solo lectura
+ * (ver captura-foto-paciente.tsx), no este selector de "documentos de soporte".
+ */
+type TipoDocumentoCapturista = Exclude<TipoDocumento, "foto_paciente">;
+
+const ETIQUETA_DOCUMENTO: Record<TipoDocumentoCapturista, string> = {
   acta: "Acta de nacimiento",
   curp: "CURP",
   ine_responsable: "INE del responsable",
@@ -32,7 +39,7 @@ interface ConsentimientoInfo {
 
 interface DocumentoInfo {
   id: string;
-  tipo: TipoDocumento;
+  tipo: TipoDocumentoCapturista;
   creado_en: string;
   url: string | null;
 }
@@ -117,7 +124,7 @@ function FilaConsentimiento({
 
 function SubidaDocumento({ expedienteId }: { expedienteId: string }) {
   const router = useRouter();
-  const [tipo, setTipo] = useState<TipoDocumento>("curp");
+  const [tipo, setTipo] = useState<TipoDocumentoCapturista>("curp");
   const [error, setError] = useState<string | null>(null);
   const [enProceso, iniciarTransicion] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -151,7 +158,7 @@ function SubidaDocumento({ expedienteId }: { expedienteId: string }) {
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <select
         value={tipo}
-        onChange={(e) => setTipo(e.target.value as TipoDocumento)}
+        onChange={(e) => setTipo(e.target.value as TipoDocumentoCapturista)}
         className="rounded-md border border-input bg-background px-2 py-1 text-sm"
       >
         {Object.entries(ETIQUETA_DOCUMENTO).map(([valor, etiqueta]) => (

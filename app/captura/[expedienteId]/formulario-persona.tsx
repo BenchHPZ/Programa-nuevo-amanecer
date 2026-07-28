@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 
 import { actualizarPersona } from "@/app/captura/acciones";
+import { EXTRANJERO, ESTADOS_MEXICO, MUNICIPIOS_POR_ESTADO, type EstadoMexico } from "@/lib/geografia-mexico";
+import { validarCorreo, validarCurp, validarTelefono } from "@/lib/validaciones";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -22,6 +24,7 @@ interface DatosPersona {
   curp: string | null;
   telefono: string | null;
   telefono_alterno: string | null;
+  correo: string | null;
   estado_geografico: string | null;
   municipio: string | null;
   localidad: string | null;
@@ -29,11 +32,37 @@ interface DatosPersona {
 }
 
 type EstadoGuardado = "guardado" | "pendiente" | "guardando" | "error";
+type CampoValidado = "curp" | "telefono" | "correo";
 
 const ESPERA_AUTOGUARDADO_MS = 1200;
 
+/**
+ * `<SelectValue />` sin hijos solo resuelve la etiqueta del valor elegido
+ * si se le pasa `items` a `<Select>` (ver base-ui/react/select/root) — sin
+ * eso, muestra el value crudo ("H") en el disparador cerrado, no la
+ * etiqueta ("Masculino"), aunque la lista de opciones sí diga lo correcto.
+ * Mismo workaround que ya usa fila-jornada.tsx: pasarle la etiqueta como
+ * función hija.
+ */
+const ETIQUETA_SEXO: Record<string, string> = { H: "Masculino", M: "Femenino" };
+function etiquetaSexo(valor: unknown): string {
+  return (typeof valor === "string" && ETIQUETA_SEXO[valor]) || "Elegir…";
+}
+
+function esEstadoConocido(valor: string | null): valor is Exclude<EstadoMexico, typeof EXTRANJERO> {
+  return valor !== null && valor !== EXTRANJERO && valor in MUNICIPIOS_POR_ESTADO;
+}
+
+function calcularError(campo: CampoValidado, valor: string | null): string | undefined {
+  if (!valor) return undefined;
+  if (campo === "curp") return validarCurp(valor) ? undefined : "CURP inválida (18 caracteres, formato oficial).";
+  if (campo === "telefono") return validarTelefono(valor) ? undefined : "Debe tener 10 dígitos.";
+  return validarCorreo(valor) ? undefined : "Correo electrónico inválido.";
+}
+
 export function FormularioPersona({ personaId, inicial }: { personaId: string; inicial: DatosPersona }) {
   const [datos, setDatos] = useState(inicial);
+  const [errores, setErrores] = useState<Partial<Record<CampoValidado, string>>>({});
   const [estadoGuardado, setEstadoGuardado] = useState<EstadoGuardado>("guardado");
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -43,16 +72,46 @@ export function FormularioPersona({ personaId, inicial }: { personaId: string; i
     };
   }, []);
 
-  function actualizar<K extends keyof DatosPersona>(campo: K, valor: DatosPersona[K]) {
-    setDatos((prev) => ({ ...prev, [campo]: valor }));
+  /**
+   * Único punto que programa el autoguardado. Si algún campo validado
+   * (CURP, teléfono, correo) tiene un error pendiente — sea el que se acaba
+   * de tocar o cualquier otro — no se agenda el guardado: es preferible
+   * dejar cambios sin guardar a mandar un dato con formato inválido.
+   */
+  function actualizarVarios(cambios: Partial<DatosPersona>, erroresCambios?: Partial<Record<CampoValidado, string | undefined>>) {
+    const siguiente = { ...datos, ...cambios };
+    setDatos(siguiente);
+
+    const siguientesErrores = erroresCambios ? { ...errores, ...erroresCambios } : errores;
+    if (erroresCambios) setErrores(siguientesErrores);
+
     setEstadoGuardado("pendiente");
     if (temporizador.current) clearTimeout(temporizador.current);
+    if (Object.values(siguientesErrores).some(Boolean)) return;
+
     temporizador.current = setTimeout(async () => {
       setEstadoGuardado("guardando");
-      const r = await actualizarPersona(personaId, { ...datos, [campo]: valor });
+      const r = await actualizarPersona(personaId, siguiente);
       setEstadoGuardado(r.error ? "error" : "guardado");
     }, ESPERA_AUTOGUARDADO_MS);
   }
+
+  function actualizar<K extends keyof DatosPersona>(campo: K, valor: DatosPersona[K]) {
+    if (campo === "curp" || campo === "telefono" || campo === "correo") {
+      actualizarVarios({ [campo]: valor } as Partial<DatosPersona>, { [campo]: calcularError(campo, valor as string | null) });
+    } else {
+      actualizarVarios({ [campo]: valor } as Partial<DatosPersona>);
+    }
+  }
+
+  /** El municipio elegido casi nunca sigue siendo válido al cambiar de estado — se limpia junto con él. */
+  function alCambiarEstado(valor: string) {
+    actualizarVarios({ estado_geografico: valor, municipio: null });
+  }
+
+  const municipiosDisponibles: readonly string[] = esEstadoConocido(datos.estado_geografico)
+    ? MUNICIPIOS_POR_ESTADO[datos.estado_geografico]
+    : [];
 
   return (
     <div className="space-y-4">
@@ -72,32 +131,73 @@ export function FormularioPersona({ personaId, inicial }: { personaId: string; i
         <Campo label="Sexo">
           <Select value={datos.sexo} onValueChange={(v) => v && actualizar("sexo", v)}>
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue>{etiquetaSexo}</SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="H">Hombre</SelectItem>
-              <SelectItem value="M">Mujer</SelectItem>
+              <SelectItem value="H">Masculino</SelectItem>
+              <SelectItem value="M">Femenino</SelectItem>
             </SelectContent>
           </Select>
         </Campo>
-        <Campo label="CURP">
+        <Campo label="CURP" error={errores.curp}>
           <Input
             value={datos.curp ?? ""}
             onChange={(e) => actualizar("curp", e.target.value.toUpperCase() || null)}
             className="uppercase"
+            aria-invalid={Boolean(errores.curp)}
           />
         </Campo>
-        <Campo label="Teléfono">
-          <Input value={datos.telefono ?? ""} onChange={(e) => actualizar("telefono", e.target.value || null)} />
+        <Campo label="Teléfono" error={errores.telefono}>
+          <Input
+            value={datos.telefono ?? ""}
+            onChange={(e) => actualizar("telefono", e.target.value || null)}
+            aria-invalid={Boolean(errores.telefono)}
+          />
         </Campo>
         <Campo label="Teléfono alterno">
           <Input value={datos.telefono_alterno ?? ""} onChange={(e) => actualizar("telefono_alterno", e.target.value || null)} />
         </Campo>
+        <Campo label="Correo electrónico" error={errores.correo}>
+          <Input
+            type="email"
+            value={datos.correo ?? ""}
+            onChange={(e) => actualizar("correo", e.target.value || null)}
+            aria-invalid={Boolean(errores.correo)}
+          />
+        </Campo>
         <Campo label="Estado">
-          <Input value={datos.estado_geografico ?? ""} onChange={(e) => actualizar("estado_geografico", e.target.value || null)} />
+          <Select value={datos.estado_geografico ?? undefined} onValueChange={(v) => v && alCambiarEstado(v)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Elegir…" />
+            </SelectTrigger>
+            <SelectContent>
+              {ESTADOS_MEXICO.map((e) => (
+                <SelectItem key={e} value={e}>
+                  {e}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Campo>
         <Campo label="Municipio">
-          <Input value={datos.municipio ?? ""} onChange={(e) => actualizar("municipio", e.target.value || null)} />
+          <Select
+            value={datos.municipio ?? undefined}
+            onValueChange={(v) => v && actualizar("municipio", v)}
+            disabled={municipiosDisponibles.length === 0}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue
+                placeholder={datos.estado_geografico === EXTRANJERO ? "No aplica" : "Elegir estado primero…"}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {municipiosDisponibles.map((m) => (
+                <SelectItem key={m} value={m}>
+                  {m}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Campo>
         <Campo label="Localidad">
           <Input value={datos.localidad ?? ""} onChange={(e) => actualizar("localidad", e.target.value || null)} />
@@ -111,11 +211,22 @@ export function FormularioPersona({ personaId, inicial }: { personaId: string; i
   );
 }
 
-function Campo({ label, className, children }: { label: string; className?: string; children: React.ReactNode }) {
+function Campo({
+  label,
+  className,
+  error,
+  children,
+}: {
+  label: string;
+  className?: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className={`space-y-1 ${className ?? ""}`}>
       <Label>{label}</Label>
       {children}
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
 }

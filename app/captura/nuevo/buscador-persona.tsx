@@ -80,6 +80,8 @@ function agruparCoincidencias(filas: ResultadoBusqueda[]): CoincidenciaAgrupada[
 const ETIQUETA_MOTIVO: Record<string, string> = {
   curp: "misma CURP",
   nombre_fecha: "nombre y fecha de nacimiento parecidos",
+  nombre: "nombre parecido",
+  fecha: "misma fecha de nacimiento",
   telefono: "mismo teléfono",
 };
 
@@ -89,6 +91,17 @@ const ETIQUETA_DICTAMEN: Record<string, string> = {
   no_apto: "no apto",
   regresar_6_meses: "regresar en 6 meses",
 };
+
+/**
+ * `<SelectValue />` sin hijos ni `items` en `<Select>` muestra el value
+ * crudo ("H") en el disparador, no la etiqueta de la opción elegida — bug
+ * de base-ui/react/select ya presente antes de este cambio. Mismo
+ * workaround que fila-jornada.tsx y formulario-persona.tsx.
+ */
+const ETIQUETA_SEXO: Record<string, string> = { H: "Masculino", M: "Femenino" };
+function etiquetaSexo(valor: unknown): string {
+  return (typeof valor === "string" && ETIQUETA_SEXO[valor]) || "Elegir…";
+}
 
 type Fase = "buscando" | "resultados" | "creando" | "listo";
 
@@ -194,6 +207,7 @@ export function BuscadorPersona({
       fecha_nacimiento: String(formData.get("fecha_nacimiento") ?? ""),
       sexo: String(formData.get("sexo") ?? "") as "H" | "M",
       telefono: String(formData.get("telefono") ?? "").trim() || null,
+      correo: String(formData.get("correo") ?? "").trim() || null,
       curp: String(formData.get("curp") ?? "").trim().toUpperCase() || null,
     };
     if (!datos.nombre || !datos.apellido_paterno || !datos.fecha_nacimiento || !datos.sexo) {
@@ -414,11 +428,11 @@ export function BuscadorPersona({
                 <Label htmlFor={`${idPrefix}-sexo`}>Sexo *</Label>
                 <Select name="sexo" required>
                   <SelectTrigger id={`${idPrefix}-sexo`}>
-                    <SelectValue placeholder="Elegir…" />
+                    <SelectValue>{etiquetaSexo}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="H">Hombre</SelectItem>
-                    <SelectItem value="M">Mujer</SelectItem>
+                    <SelectItem value="H">Masculino</SelectItem>
+                    <SelectItem value="M">Femenino</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -427,8 +441,15 @@ export function BuscadorPersona({
                 <Input
                   id={`${idPrefix}-tel`}
                   name="telefono"
+                  inputMode="numeric"
+                  pattern="\d{10}"
+                  title="10 dígitos"
                   defaultValue={criterios.telefono ?? ""}
                 />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor={`${idPrefix}-correo`}>Correo electrónico</Label>
+                <Input id={`${idPrefix}-correo`} name="correo" type="email" />
               </div>
               <div className="space-y-1 sm:col-span-2">
                 <Label htmlFor={`${idPrefix}-curp`}>CURP (si la trae)</Label>

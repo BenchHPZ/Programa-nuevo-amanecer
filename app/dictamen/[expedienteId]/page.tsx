@@ -2,18 +2,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { generarQrSvg } from "@/lib/qr";
+import { urlFirmadaPapeleria } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { CampoCatalogo, DefinicionCatalogo } from "@/components/form-renderer/tipos";
+import { FormularioSeccion } from "@/components/form-renderer/formulario-seccion";
+import type { DatosSeccion, DefinicionCatalogo } from "@/components/form-renderer/tipos";
+import { FotoPaciente } from "@/components/expediente/foto-paciente";
 import type { EstadoExpediente, ResultadoDictamen, Tables } from "@/lib/supabase/tipos";
 
 import { FormularioDictamen } from "./formulario-dictamen";
 
 const TITULO_SECCION = {
-  antecedentes: "Antecedentes médicos",
-  socioeconomico: "Estudio socioeconómico",
+  antecedentes: "Historia clínica",
+  socioeconomico: "Datos socioeconómicos",
 } as const;
 
 const ETIQUETA_RESULTADO: Record<ResultadoDictamen, { texto: string; variante: "default" | "secondary" | "destructive" }> = {
@@ -40,18 +43,6 @@ interface FilaExpediente {
   folio: Tables<"folio"> | Tables<"folio">[] | null;
 }
 
-function formatearValor(campo: CampoCatalogo, valor: unknown): string {
-  if (valor === null || valor === undefined || valor === "") return "—";
-  if (campo.tipo === "booleano") return valor ? "Sí" : "No";
-  if (campo.tipo === "seleccion_multiple") {
-    return Array.isArray(valor) && valor.length ? valor.join(", ") : "—";
-  }
-  if (campo.tipo === "fecha" && typeof valor === "string") {
-    return new Date(valor).toLocaleDateString("es-MX");
-  }
-  return String(valor);
-}
-
 export default async function PaginaDictamenExpediente({
   params,
 }: {
@@ -73,7 +64,7 @@ export default async function PaginaDictamenExpediente({
 
   if (!expediente || !expediente.paciente) notFound();
 
-  const [{ data: vinculos }, { data: catalogos }, { data: seccionesGuardadas }] = await Promise.all([
+  const [{ data: vinculos }, { data: catalogos }, { data: seccionesGuardadas }, { data: fotos }] = await Promise.all([
     supabase
       .from("paciente_responsable")
       .select("parentesco, es_principal, responsable:responsable_id(*)")
@@ -85,6 +76,13 @@ export default async function PaginaDictamenExpediente({
       .eq("jornada_id", expediente.jornada_id)
       .eq("vigente", true),
     supabase.from("expediente_seccion").select("seccion, datos").eq("expediente_id", expediente.id),
+    supabase
+      .from("documento")
+      .select("archivo_path")
+      .eq("expediente_id", expediente.id)
+      .eq("tipo", "foto_paciente")
+      .order("creado_en", { ascending: false })
+      .limit(1),
   ]);
 
   const jornada = Array.isArray(expediente.jornada) ? expediente.jornada[0] : expediente.jornada;
@@ -95,6 +93,11 @@ export default async function PaginaDictamenExpediente({
     ? await supabase.from("usuario_perfil").select("nombre").eq("id", dictamen.medico_id).maybeSingle()
     : { data: null };
   const qrSvg = folioActivo ? await generarQrSvg(folioActivo.folio_texto) : null;
+  const urlFotoPaciente = fotos?.[0] ? await urlFirmadaPapeleria(fotos[0].archivo_path) : null;
+
+  const catalogoAntecedentes = catalogos?.find((c) => c.seccion === "antecedentes");
+  const definicionAntecedentes = catalogoAntecedentes?.definicion as unknown as DefinicionCatalogo | undefined;
+  const seccionAntecedentes = seccionesGuardadas?.find((s) => s.seccion === "antecedentes");
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
@@ -135,7 +138,7 @@ export default async function PaginaDictamenExpediente({
           </p>
           <p>
             <span className="text-muted-foreground">Sexo: </span>
-            {expediente.paciente.sexo === "H" ? "Hombre" : "Mujer"}
+            {expediente.paciente.sexo === "H" ? "Masculino" : "Femenino"}
           </p>
           <p>
             <span className="text-muted-foreground">Teléfono: </span>
@@ -167,28 +170,35 @@ export default async function PaginaDictamenExpediente({
         </Card>
       )}
 
-      {(["antecedentes", "socioeconomico"] as const).map((seccion) => {
-        const catalogo = catalogos?.find((c) => c.seccion === seccion);
-        if (!catalogo) return null;
-        const definicion = catalogo.definicion as unknown as DefinicionCatalogo;
-        const guardado = seccionesGuardadas?.find((s) => s.seccion === seccion);
-        const datos = (guardado?.datos as Record<string, unknown>) ?? {};
-        return (
-          <Card key={seccion}>
-            <CardHeader>
-              <CardTitle>{TITULO_SECCION[seccion]}</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-1 text-sm sm:grid-cols-2">
-              {definicion.campos.map((campo) => (
-                <p key={campo.clave}>
-                  <span className="text-muted-foreground">{campo.etiqueta}: </span>
-                  {formatearValor(campo, datos[campo.clave])}
-                </p>
-              ))}
-            </CardContent>
-          </Card>
-        );
-      })}
+      <Card>
+        <CardHeader>
+          <CardTitle>Foto del paciente</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <FotoPaciente expedienteId={expediente.id} url={urlFotoPaciente} editable />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{TITULO_SECCION.antecedentes}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {definicionAntecedentes ? (
+            <FormularioSeccion
+              expedienteId={expediente.id}
+              seccion="antecedentes"
+              campos={definicionAntecedentes.campos}
+              datosIniciales={(seccionAntecedentes?.datos as unknown as DatosSeccion) ?? {}}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Sin catálogo configurado para esta jornada. Un administrativo debe cargarlo en
+              /admin/catalogo.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {dictamen ? (
         <Card>

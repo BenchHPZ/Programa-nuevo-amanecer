@@ -2,6 +2,7 @@
 
 import { crearClienteServidor } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/tipos";
+import { validarCorreo, validarCurp, validarTelefono } from "@/lib/validaciones";
 
 type PersonaInsert = Database["public"]["Tables"]["persona"]["Insert"];
 type PersonaUpdate = Database["public"]["Tables"]["persona"]["Update"];
@@ -49,7 +50,26 @@ export async function historialPersona(personaId: string) {
   return { expedientes: data ?? [] };
 }
 
+/**
+ * Frontera de confianza real para curp/telefono/correo: el formulario ya
+ * valida antes de mandar, pero esta es la última parada antes de la base —
+ * un cliente que se saltara la UI, o un futuro llamador, no debe poder
+ * guardar un formato inválido solo porque nadie más lo revisó aquí.
+ */
+function errorDeFormato(datos: Record<string, unknown>): string | null {
+  const { curp, telefono, correo } = datos;
+  if (typeof curp === "string" && curp && !validarCurp(curp)) return "CURP inválida.";
+  if (typeof telefono === "string" && telefono && !validarTelefono(telefono)) {
+    return "El teléfono debe tener 10 dígitos.";
+  }
+  if (typeof correo === "string" && correo && !validarCorreo(correo)) return "Correo electrónico inválido.";
+  return null;
+}
+
 export async function crearPersona(datos: PersonaInsert) {
+  const errorFormato = errorDeFormato(datos);
+  if (errorFormato) return { error: errorFormato };
+
   const supabase = await crearClienteServidor();
   const {
     data: { user },
@@ -74,6 +94,7 @@ const CAMPOS_EDITABLES = [
   "curp",
   "telefono",
   "telefono_alterno",
+  "correo",
   "estado_geografico",
   "municipio",
   "localidad",
@@ -93,6 +114,9 @@ export async function actualizarPersona(id: string, datos: PersonaUpdate) {
   for (const campo of CAMPOS_EDITABLES) {
     if (campo in datos) limpio[campo] = datos[campo];
   }
+
+  const errorFormato = errorDeFormato(limpio);
+  if (errorFormato) return { error: errorFormato };
 
   const supabase = await crearClienteServidor();
   const { error } = await supabase.from("persona").update(limpio as PersonaUpdate).eq("id", id);

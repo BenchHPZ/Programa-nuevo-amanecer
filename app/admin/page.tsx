@@ -132,7 +132,7 @@ export default async function PaginaAdmin() {
           <Card className="transition-colors hover:bg-muted/50">
             <CardHeader>
               <CardTitle>Catálogo de campos</CardTitle>
-              <CardDescription>Antecedentes médicos y estudio socioeconómico, sin desplegar.</CardDescription>
+              <CardDescription>Historia clínica y datos socioeconómicos, sin desplegar.</CardDescription>
             </CardHeader>
           </Card>
         </Link>

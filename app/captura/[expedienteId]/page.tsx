@@ -10,14 +10,15 @@ import type { EstadoExpediente } from "@/lib/supabase/tipos";
 
 import { FormularioSeccion } from "@/components/form-renderer/formulario-seccion";
 import type { DatosSeccion, DefinicionCatalogo } from "@/components/form-renderer/tipos";
+import { FotoPaciente } from "@/components/expediente/foto-paciente";
 
 import { FormularioPersona } from "./formulario-persona";
 import { Papeleria } from "./papeleria";
 import { UltimaModificacion } from "./ultima-modificacion";
 
 const TITULO_SECCION = {
-  antecedentes: "Antecedentes médicos",
-  socioeconomico: "Estudio socioeconómico",
+  antecedentes: "Historia clínica",
+  socioeconomico: "Datos socioeconómicos",
 } as const;
 
 const ETIQUETA_ESTADO: Record<EstadoExpediente, string> = {
@@ -42,6 +43,7 @@ function aDatosEditables(persona: {
   curp: string | null;
   telefono: string | null;
   telefono_alterno: string | null;
+  correo: string | null;
   estado_geografico: string | null;
   municipio: string | null;
   localidad: string | null;
@@ -56,6 +58,7 @@ function aDatosEditables(persona: {
     curp,
     telefono,
     telefono_alterno,
+    correo,
     estado_geografico,
     municipio,
     localidad,
@@ -70,6 +73,7 @@ function aDatosEditables(persona: {
     curp,
     telefono,
     telefono_alterno,
+    correo,
     estado_geografico,
     municipio,
     localidad,
@@ -94,7 +98,7 @@ export default async function PaginaExpediente({
 
   if (!expediente || !expediente.paciente) notFound();
 
-  const [{ data: vinculos }, { data: catalogos }, { data: seccionesGuardadas }, { data: consentimientos }, { data: documentos }] =
+  const [{ data: vinculos }, { data: catalogos }, { data: seccionesGuardadas }, { data: consentimientos }, { data: documentos }, { data: fotos }] =
     await Promise.all([
       supabase
         .from("paciente_responsable")
@@ -115,13 +119,21 @@ export default async function PaginaExpediente({
         .from("documento")
         .select("id, tipo, archivo_path, creado_en")
         .eq("expediente_id", expediente.id)
+        .neq("tipo", "foto_paciente")
         .order("creado_en", { ascending: false }),
+      supabase
+        .from("documento")
+        .select("archivo_path")
+        .eq("expediente_id", expediente.id)
+        .eq("tipo", "foto_paciente")
+        .order("creado_en", { ascending: false })
+        .limit(1),
     ]);
 
   const principal = vinculos?.[0];
   const jornada = Array.isArray(expediente.jornada) ? expediente.jornada[0] : expediente.jornada;
 
-  const [consentimientosConUrl, documentosConUrl] = await Promise.all([
+  const [consentimientosConUrl, documentosConUrl, urlFotoPaciente] = await Promise.all([
     Promise.all(
       (consentimientos ?? [])
         .filter((c) => c.tipo !== "consentimiento_informado")
@@ -134,11 +146,12 @@ export default async function PaginaExpediente({
     Promise.all(
       (documentos ?? []).map(async (d) => ({
         id: d.id,
-        tipo: d.tipo,
+        tipo: d.tipo as Exclude<(typeof d)["tipo"], "foto_paciente">,
         creado_en: d.creado_en,
         url: await urlFirmadaPapeleria(d.archivo_path),
       })),
     ),
+    fotos?.[0] ? urlFirmadaPapeleria(fotos[0].archivo_path) : Promise.resolve(null),
   ]);
 
   return (
@@ -184,6 +197,15 @@ export default async function PaginaExpediente({
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Foto del paciente</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <FotoPaciente expedienteId={expediente.id} url={urlFotoPaciente} editable={false} />
+        </CardContent>
+      </Card>
 
       {(["antecedentes", "socioeconomico"] as const).map((seccion) => {
         const catalogo = catalogos?.find((c) => c.seccion === seccion);

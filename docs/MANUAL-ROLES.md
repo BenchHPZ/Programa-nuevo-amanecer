@@ -1,7 +1,7 @@
 # Manual por rol
 
 **Programa Nuevo Amanecer, A.C. — sistema de gestión de jornadas**
-Versión 1.0 · 3 de agosto de 2026
+Versión 1.1 · 4 de agosto de 2026
 
 Este documento responde una sola pregunta: **¿qué me toca a mí?**
 
@@ -24,7 +24,7 @@ flowchart TD
 
     Cap["CAPTURISTA<br/>busca duplicados, captura<br/>las 4 secciones y la papelería"] --> Med
 
-    Med["MÉDICO DE TRIAGE<br/>registra el dictamen"] --> Apto{Resultado}
+    Med["MÉDICO DE TRIAGE<br/>Historia clínica, foto<br/>y registra el dictamen"] --> Apto{Resultado}
 
     Apto -->|apto cirugía| Folio["Folio asignado<br/>automáticamente"]
     Apto -->|apto láser| Folio
@@ -47,9 +47,11 @@ Comprobado con las cuentas de cada rol contra las políticas de la base.
 | Consultar expedientes y personas | ✅ | ✅ | ✅ | ✅ |
 | Ver quién modificó qué y cuándo | ✅ | ✅ | ✅ | ✅ |
 | Crear y editar personas | ✅ | ❌ | ✅ | ❌ |
-| Capturar las secciones del expediente | ✅ | ❌ | ✅ | ❌ |
+| Capturar Historia clínica | ✅ | ✅ | ✅ | ❌ |
+| Capturar Datos socioeconómicos | ✅ | ❌ | ✅ | ❌ |
 | Validar y promover pre-registros | ✅ | ❌ | ✅ | ❌ |
 | Subir papelería firmada | ✅ | ❌ | ✅ | ❌ |
+| Subir la foto del paciente | ❌ | ✅ | ✅ | ❌ |
 | Registrar o corregir el dictamen | ❌ | ✅ | ✅ | ❌ |
 | Imprimir folios y constancias | ✅ | ✅ | ✅ | ✅ |
 | Exportar el padrón | ❌ | ❌ | ✅ | ❌ |
@@ -73,10 +75,13 @@ firmada y la subes. Cuando el expediente está completo, pasa al médico.
 
 **Lo que sí puedes**
 
-- Buscar personas y ver su historial de jornadas anteriores.
+- Buscar personas y ver su historial de jornadas anteriores. **Un solo dato basta** — CURP,
+  teléfono, fecha de nacimiento o nombre solos ya encuentran a alguien; no hace falta tener
+  varios datos a la mano.
 - Crear personas y expedientes, y editarlos cuantas veces haga falta.
 - Abrir la bandeja de **pre-registros** y promover uno a expediente.
 - Subir consentimientos y documentos, y volver a subirlos si una foto salió borrosa.
+- Ver la foto del paciente una vez que el médico la suba (no la subes tú — ver §4).
 - Imprimir el folio y la constancia.
 
 **Lo que no puedes, y qué pasa si lo intentas**
@@ -90,7 +95,7 @@ firmada y la subes. Cuando el expediente está completo, pasa al médico.
 | Situación | Qué hacer |
 |---|---|
 | Creaste a alguien que ya existía | Avisa al administrativo. No se borra: se concilia después |
-| No encuentras a alguien que juras que ya vino | Busca por teléfono, o solo por apellido. La búsqueda tolera errores de escritura |
+| No encuentras a alguien que juras que ya vino | Prueba con un solo dato a la vez (nombre, fecha de nacimiento, CURP o teléfono) — no hace falta darlos todos, y la búsqueda tolera errores de escritura en el nombre |
 | La familia no trae adulto responsable | No se puede terminar el expediente. Cítala de nuevo con acompañante |
 | Cerraste sin guardar | El expediente se guarda solo mientras escribes. Vuelve a abrirlo |
 
@@ -110,7 +115,11 @@ valoración. Un expediente a medio capturar no te aparece: falta información pa
 
 **Lo que sí puedes**
 
-- Consultar el expediente entero, incluidos antecedentes y estudio socioeconómico.
+- Consultar el expediente entero.
+- **Editar la Historia clínica** (antes «antecedentes médicos», solo lectura para ti — ya no).
+  Guarda igual que cuando lo hace un capturista: automático, mientras escribes.
+- **Tomar o subir la foto del paciente**, desde el celular en el momento de la valoración —
+  usa la cámara o un archivo ya existente, como prefieras.
 - Registrar el dictamen, con cuatro salidas posibles:
 
 ```mermaid
@@ -125,9 +134,18 @@ flowchart LR
 
 **Lo que no puedes, y qué pasa si lo intentas**
 
-- **Editar los datos del paciente o las secciones del expediente.** Si hay un error, se lo dices
-  al capturista. La base rechaza la edición.
+- **Editar los datos personales del paciente o del adulto responsable** (nombre, CURP, teléfono,
+  domicilio…). Si hay un error ahí, se lo dices al capturista. La base rechaza la edición.
+- **Ver ni editar Datos socioeconómicos** (antes «estudio socioeconómico»). No aparece en tu
+  pantalla — sigue siendo terreno exclusivo del capturista y del administrativo.
 - **Exportar o administrar.**
+
+> ⚠ Sobre Datos socioeconómicos: la base de datos nunca te dejó *editarla* — eso no cambió y sigue
+> comprobado contra la base. Pero *leerla* nunca estuvo bloqueado para ti a nivel de base de
+> datos; lo que cambió es que la pantalla de dictamen dejó de mostrártela. Es la única línea de
+> este manual que describe una pantalla, no un candado de la base — se anota aquí precisamente
+> porque el resto del documento promete lo contrario. En la práctica no cambia tu trabajo: esa
+> sección simplemente ya no aparece donde tú la ves.
 
 **Sobre el folio.** No lo generas tú a mano: al guardar un dictamen «apto», el sistema lo asigna
 en la misma operación. Si el dictamen se guardó, el folio existe. Nunca hay uno sin el otro.
@@ -139,6 +157,7 @@ en la misma operación. Si el dictamen se guardó, el folio existe. Nunca hay un
 | El expediente no aparece en tu lista | Está incompleto. El capturista debe terminarlo |
 | Te equivocaste de resultado | Corrígelo. Queda registrado quién lo cambió y cuándo |
 | Falta un estudio para decidir | Regresar en 6 meses es una salida válida, no un fracaso |
+| La foto salió mal | Vuelve a tomarla. No borra la anterior — nada se borra — pero el expediente siempre muestra la más reciente |
 
 ---
 

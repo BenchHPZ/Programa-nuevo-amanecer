@@ -7,6 +7,8 @@
  * predice el resultado es peor que no tenerla, porque se confía en ella.
  */
 
+import { ES_CURP, ES_TELEFONO } from "@/lib/validaciones";
+
 export const COLUMNAS_REQUERIDAS = [
   "nombre",
   "apellido_paterno",
@@ -29,7 +31,6 @@ export const COLUMNAS_OPCIONALES = [
 ] as const;
 
 const ES_FECHA = /^\d{4}-\d{2}-\d{2}$/;
-const ES_CURP = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]{2}$/;
 
 export interface FilaAnalizada {
   /** Número de fila del archivo, contando el encabezado como 1. */
@@ -64,7 +65,7 @@ export function validarFila(datos: Record<string, string>): string[] {
 
   for (const campo of ["telefono", "responsable_telefono"]) {
     const valor = datos[campo];
-    if (valor && !/^\d{10}$/.test(valor)) {
+    if (valor && !ES_TELEFONO.test(valor)) {
       errores.push(`El ${campo.replace(/_/g, " ")} debe tener 10 dígitos`);
     }
   }

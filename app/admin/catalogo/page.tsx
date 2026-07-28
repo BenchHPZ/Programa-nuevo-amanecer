@@ -7,8 +7,8 @@ import { EditorCatalogo } from "./editor";
 export const dynamic = "force-dynamic";
 
 const SECCIONES = [
-  { clave: "antecedentes" as const, titulo: "Antecedentes médicos" },
-  { clave: "socioeconomico" as const, titulo: "Estudio socioeconómico" },
+  { clave: "antecedentes" as const, titulo: "Historia clínica" },
+  { clave: "socioeconomico" as const, titulo: "Datos socioeconómicos" },
 ];
 
 const PLANTILLA_VACIA = JSON.stringify({ campos: [] }, null, 2);

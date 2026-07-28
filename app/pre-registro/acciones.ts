@@ -2,6 +2,7 @@
 
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/server";
+import { validarTelefono } from "@/lib/validaciones";
 
 const VENTANA_ANTIABUSO_MS = 24 * 60 * 60 * 1000;
 
@@ -39,7 +40,7 @@ export async function crearPreRegistro(datos: DatosPreRegistro) {
   if (!nombrePaciente || !nombreContacto || !telefono) {
     return { error: "Nombre del paciente, nombre de contacto y teléfono son obligatorios." };
   }
-  if (!/^\d{10}$/.test(telefono)) {
+  if (!validarTelefono(telefono)) {
     return { error: "El teléfono debe tener 10 dígitos." };
   }
   if (!datos.aceptaAviso) {

@@ -1,13 +1,3 @@
-/**
- * Generado desde la base local:
- *
- *   npx supabase gen types typescript --local > lib/supabase/tipos.ts
- *
- * No editar el bloque `Database` a mano — vuelve a generarlo tras cada
- * migración nueva. Los alias de conveniencia al final del archivo sí se
- * mantienen a mano.
- */
-
 export type Json =
   | string
   | number
@@ -497,6 +487,7 @@ export type Database = {
           activo: boolean
           apellido_materno: string | null
           apellido_paterno: string
+          correo: string | null
           creado_en: string
           creado_por: string | null
           curp: string | null
@@ -516,6 +507,7 @@ export type Database = {
           activo?: boolean
           apellido_materno?: string | null
           apellido_paterno: string
+          correo?: string | null
           creado_en?: string
           creado_por?: string | null
           curp?: string | null
@@ -535,6 +527,7 @@ export type Database = {
           activo?: boolean
           apellido_materno?: string | null
           apellido_paterno?: string
+          correo?: string | null
           creado_en?: string
           creado_por?: string | null
           curp?: string | null
@@ -683,6 +676,26 @@ export type Database = {
           },
         ]
       }
+      vista_conteos_publicos: {
+        Row: {
+          apto_cirugia: number | null
+          apto_laser: number | null
+          completos: number | null
+          dictaminados: number | null
+          jornada_id: string | null
+          registrados_hoy: number | null
+          total_expedientes: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expediente_jornada_id_fkey"
+            columns: ["jornada_id"]
+            isOneToOne: false
+            referencedRelation: "jornada"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       asignar_folio: {
@@ -810,6 +823,7 @@ export type Database = {
         | "ine_responsable"
         | "comprobante_domicilio"
         | "estudio_previo"
+        | "foto_paciente"
       tipo_seccion: "antecedentes" | "socioeconomico"
     }
     CompositeTypes: {
@@ -981,6 +995,7 @@ export const Constants = {
         "ine_responsable",
         "comprobante_domicilio",
         "estudio_previo",
+        "foto_paciente",
       ],
       tipo_seccion: ["antecedentes", "socioeconomico"],
     },
@@ -1004,3 +1019,4 @@ export type TipoSeccion = EnumsPublicas["tipo_seccion"];
 export type TipoConsentimiento = EnumsPublicas["tipo_consentimiento"];
 export type TipoDocumento = EnumsPublicas["tipo_documento"];
 export type EstadoPreRegistro = EnumsPublicas["estado_pre_registro"];
+

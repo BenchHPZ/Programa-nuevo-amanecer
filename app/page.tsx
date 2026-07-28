@@ -15,11 +15,16 @@ import {
   faltaConfirmar,
   type CategoriaAliado,
 } from "@/config/contenido-landing";
-import { obtenerJornadaParaConvocatoria } from "@/lib/jornada";
+import {
+  obtenerConteosPublicos,
+  obtenerJornadaActivaPublica,
+  obtenerJornadaParaConvocatoria,
+} from "@/lib/jornada";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/marca/logo";
 import { SalonDeLaFama } from "@/components/landing/salon-de-la-fama";
+import { BannerJornada } from "@/components/landing/banner-jornada";
 
 export const dynamic = "force-dynamic";
 
@@ -34,13 +39,11 @@ export const dynamic = "force-dynamic";
  * consentimiento escrito específico para difusión, y no existe.
  */
 export default async function Inicio() {
-  const jornada = await obtenerJornadaParaConvocatoria();
-
-  const fechas = jornada
-    ? `${new Date(jornada.fecha_inicio_etapa1).toLocaleDateString("es-MX", { dateStyle: "long" })} al ${new Date(
-        jornada.fecha_fin_etapa1,
-      ).toLocaleDateString("es-MX", { dateStyle: "long" })}`
-    : null;
+  const [proximaJornada, jornadaActiva] = await Promise.all([
+    obtenerJornadaParaConvocatoria(),
+    obtenerJornadaActivaPublica(),
+  ]);
+  const conteos = jornadaActiva ? await obtenerConteosPublicos(jornadaActiva.id) : null;
 
   // Los aliados se agrupan por categoría: con once instituciones, una lista
   // plana es un muro que nadie lee.
@@ -104,34 +107,9 @@ export default async function Inicio() {
         </div>
       </section>
 
-      {/* ── Convocatoria ── */}
+      {/* ── Banner de jornada ── */}
       <section className="mx-auto w-full max-w-4xl px-6 py-12">
-        <Card className="border-primary/30">
-          <CardHeader>
-            <CardTitle>Próxima jornada</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {jornada ? (
-              <>
-                <p className="text-lg font-medium">{jornada.nombre}</p>
-                <p className="text-muted-foreground">{jornada.sede}</p>
-                <p className="text-muted-foreground">{fechas}</p>
-                <p className="text-sm text-muted-foreground">
-                  La atención es gratuita. No se necesita pertenecer a ninguna institución ni
-                  contar con seguro médico.
-                </p>
-                <Button nativeButton={false} render={<Link href="/pre-registro" />}>
-                  Pre-registrar a un paciente
-                </Button>
-              </>
-            ) : (
-              <p className="text-muted-foreground">
-                Todavía no hay fecha anunciada para la próxima jornada. Déjenos sus datos en el
-                pre-registro y le avisamos en cuanto se confirme.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        <BannerJornada jornadaActiva={jornadaActiva} conteos={conteos} proximaJornada={proximaJornada} />
       </section>
 
       {/* ── Cómo funciona ── */}
