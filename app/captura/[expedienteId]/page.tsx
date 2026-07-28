@@ -126,14 +126,13 @@ export default async function PaginaExpediente({
         .select("archivo_path")
         .eq("expediente_id", expediente.id)
         .eq("tipo", "foto_paciente")
-        .order("creado_en", { ascending: false })
-        .limit(1),
+        .order("creado_en", { ascending: false }),
     ]);
 
   const principal = vinculos?.[0];
   const jornada = Array.isArray(expediente.jornada) ? expediente.jornada[0] : expediente.jornada;
 
-  const [consentimientosConUrl, documentosConUrl, urlFotoPaciente] = await Promise.all([
+  const [consentimientosConUrl, documentosConUrl, urlsFotoPacienteConNulos] = await Promise.all([
     Promise.all(
       (consentimientos ?? [])
         .filter((c) => c.tipo !== "consentimiento_informado")
@@ -151,8 +150,9 @@ export default async function PaginaExpediente({
         url: await urlFirmadaPapeleria(d.archivo_path),
       })),
     ),
-    fotos?.[0] ? urlFirmadaPapeleria(fotos[0].archivo_path) : Promise.resolve(null),
+    Promise.all((fotos ?? []).map((f) => urlFirmadaPapeleria(f.archivo_path))),
   ]);
+  const urlsFotoPaciente = urlsFotoPacienteConNulos.filter((url): url is string => url !== null);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
@@ -203,7 +203,7 @@ export default async function PaginaExpediente({
           <CardTitle>Foto del paciente</CardTitle>
         </CardHeader>
         <CardContent>
-          <FotoPaciente expedienteId={expediente.id} url={urlFotoPaciente} editable={false} />
+          <FotoPaciente expedienteId={expediente.id} urls={urlsFotoPaciente} editable={false} />
         </CardContent>
       </Card>
 

@@ -338,6 +338,16 @@ skip_nonce_check = false
 # If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
 email_optional = false
 
+# "Continuar con Google" en /auth/iniciar-sesion (app/auth/iniciar-sesion/formulario.tsx).
+# Deshabilitado hasta dar de alta un OAuth Client ID real en Google Cloud
+# Console y llenar las variables de abajo en .env.local — ver
+# docs/DESPLIEGUE.md §6. Cambiar a `enabled = true` solo después de eso, y
+# reiniciar (`npx supabase stop && npx supabase start`) para que se tome.
+[auth.external.google]
+enabled = false
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+
 # Allow Solana wallet holders to sign in to your project via the Sign in with Solana (SIWS, EIP-4361) standard.
 # You can configure "web3" rate limit in the [auth.rate_limit] section and set up [auth.captcha] if self-hosting.
 [auth.web3.solana]

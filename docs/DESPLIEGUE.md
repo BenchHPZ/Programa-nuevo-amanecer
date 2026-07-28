@@ -132,6 +132,39 @@ solo. Ver el detalle y sus límites en [OPERACION.md](OPERACION.md) §4.
 
 ---
 
+## 6. Inicio de sesión con Google (opcional)
+
+El botón "Continuar con Google" en `/auth/iniciar-sesion` ya está en el código, pero no funciona
+hasta dar de alta credenciales reales — son pasos externos que nadie más puede hacer por ti.
+
+1. En [Google Cloud Console](https://console.cloud.google.com) → *APIs & Services → Credentials*,
+   crear un **OAuth Client ID** de tipo *Web application*. En *Authorized redirect URIs* agregar:
+   ```
+   https://<ref-del-proyecto>.supabase.co/auth/v1/callback
+   ```
+   (el mismo `<ref-del-proyecto>` del paso 2.3). Si también quieres probarlo en local, agrega
+   además `http://127.0.0.1:54321/auth/v1/callback`.
+2. Copiar el *Client ID* y *Client Secret* que genera Google.
+3. **En producción**: en el dashboard de Supabase → *Authentication → Sign In / Providers →
+   Google*, activar el proveedor y pegar ahí el Client ID/Secret. Esto es independiente de
+   `supabase/config.toml`, igual que el resto de la configuración de Auth (ver paso 2.4) — y
+   confirma que el wildcard de `Redirect URLs` que ya cubre `/auth/callback/**` sigue ahí: también
+   cubre `/auth/callback/oauth`, que es donde regresa el inicio de sesión con Google.
+4. **En local** (opcional, solo si quieres probarlo antes de ir a producción): crea un archivo
+   `.env` en la raíz del repo (no `.env.local` — ese lo lee Next.js, `.env` lo lee el CLI de
+   Supabase) con:
+   ```
+   SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=<tu client id>
+   SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=<tu client secret>
+   ```
+   Cambia `enabled = false` a `enabled = true` en `[auth.external.google]` de
+   `supabase/config.toml`, y corre `npx supabase stop && npx supabase start`.
+
+Mientras no se configure, el botón muestra un error claro al hacer clic — no rompe el resto del
+inicio de sesión.
+
+---
+
 ## Verificación final
 
 - [ ] La landing carga en el dominio de Vercel.

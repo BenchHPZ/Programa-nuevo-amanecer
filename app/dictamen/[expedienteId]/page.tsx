@@ -81,8 +81,7 @@ export default async function PaginaDictamenExpediente({
       .select("archivo_path")
       .eq("expediente_id", expediente.id)
       .eq("tipo", "foto_paciente")
-      .order("creado_en", { ascending: false })
-      .limit(1),
+      .order("creado_en", { ascending: false }),
   ]);
 
   const jornada = Array.isArray(expediente.jornada) ? expediente.jornada[0] : expediente.jornada;
@@ -93,7 +92,9 @@ export default async function PaginaDictamenExpediente({
     ? await supabase.from("usuario_perfil").select("nombre").eq("id", dictamen.medico_id).maybeSingle()
     : { data: null };
   const qrSvg = folioActivo ? await generarQrSvg(folioActivo.folio_texto) : null;
-  const urlFotoPaciente = fotos?.[0] ? await urlFirmadaPapeleria(fotos[0].archivo_path) : null;
+  const urlsFotoPaciente = (
+    await Promise.all((fotos ?? []).map((f) => urlFirmadaPapeleria(f.archivo_path)))
+  ).filter((url): url is string => url !== null);
 
   const catalogoAntecedentes = catalogos?.find((c) => c.seccion === "antecedentes");
   const definicionAntecedentes = catalogoAntecedentes?.definicion as unknown as DefinicionCatalogo | undefined;
@@ -175,7 +176,7 @@ export default async function PaginaDictamenExpediente({
           <CardTitle>Foto del paciente</CardTitle>
         </CardHeader>
         <CardContent>
-          <FotoPaciente expedienteId={expediente.id} url={urlFotoPaciente} editable />
+          <FotoPaciente expedienteId={expediente.id} urls={urlsFotoPaciente} editable />
         </CardContent>
       </Card>
 
