@@ -34,6 +34,9 @@ durante ~35-40 años.
       de contingencia y respaldos · bandeja de pre-registros (RF-181)
 - [x] Identidad de marca aplicada: color, tipografía y logotipos
 - [x] Landing pública y registro de colaboradores
+- [x] Listo para desplegar: instructivo completo en [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md)
+- [ ] **Desplegar de verdad** — falta ejecutar el instructivo contra las cuentas reales de
+      Vercel y Supabase (son pasos que solo se pueden hacer desde esos paneles)
 - [ ] **Ensayo general** con los 5 capturistas reales — es lo único de la Etapa 1
       que no se puede hacer sin ellos. Ver [docs/OPERACION.md](docs/OPERACION.md) §1
 
@@ -47,6 +50,7 @@ durante ~35-40 años.
 | [docs/REQUERIMIENTOS.md](docs/REQUERIMIENTOS.md) | Requerimientos numerados y trazables (RF / RNF) |
 | [docs/MODELO-DATOS.md](docs/MODELO-DATOS.md) | Esquema de base de datos y decisiones de diseño |
 | [docs/CUMPLIMIENTO.md](docs/CUMPLIMIENTO.md) | Normativa mexicana aplicable y cómo se cumple |
+| [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) | Instructivo paso a paso para llevar el proyecto a Vercel + Supabase |
 | [docs/OPERACION.md](docs/OPERACION.md) | Flujo del día, contingencia, respaldos y manejo de datos |
 | [docs/MANUAL-ROLES.md](docs/MANUAL-ROLES.md) | Qué le toca a cada rol, comprobado contra los permisos de la base |
 | [docs/HISTORIA.md](docs/HISTORIA.md) | Historia, misión y colaboradores del programa |

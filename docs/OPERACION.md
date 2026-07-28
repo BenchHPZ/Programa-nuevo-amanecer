@@ -122,6 +122,24 @@ Hay **dos** respaldos y no son lo mismo:
 > **Verificar el automático antes de la jornada.** Si el proyecto está en plan gratuito **no
 > hay respaldo automático**. Entrar al panel y confirmar que aparecen respaldos recientes; si
 > no, el manual es el único que existe.
+>
+> **Este proyecto, hoy, está en plan gratuito.** No es un caso hipotético: hasta que se
+> contrate Supabase Pro (~$25 USD/mes, ya presupuestado en `docs/PLAN.md`), **todo respaldo es
+> manual**. No dar por hecho el automático solo porque en algún momento se contrate el plan de
+> pago — verificarlo en el panel cada vez.
+
+### La pausa por inactividad (plan gratuito)
+
+Consecuencia distinta a la de los respaldos, y también propia del plan gratuito: Supabase
+**pausa el proyecto completo tras ~7 días sin actividad**. Esta app se usa en ráfagas —dos
+jornadas al año—, así que sin mitigación el sistema podría estar dormido justo el día que una
+familia intenta pre-registrarse desde la landing.
+
+Mitigación ya instalada: una función en `/api/keepalive` (`app/api/keepalive/route.ts`) que
+Vercel llama una vez al día (`vercel.json`, gratis en el plan Hobby) y hace una lectura trivial
+a la base. Esto **evita la pausa**, pero no sustituye nada de lo anterior: sigue sin haber
+respaldo automático, y si Vercel Cron fallara un día, no hay alerta — conviene revisar de vez en
+cuando en el panel de Vercel (*Deployments → Cron Jobs*) que sigue corriendo.
 
 **Respaldo manual:**
 
