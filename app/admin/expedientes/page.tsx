@@ -70,6 +70,15 @@ export default async function PaginaExpedientes({
             Volver al panel
           </Button>
           <Button
+            variant="outline"
+            nativeButton={false}
+            render={
+              <a href={`/imprimir/expedientes${consultaFiltros ? `?${consultaFiltros}` : ""}`} target="_blank" rel="noreferrer" />
+            }
+          >
+            Imprimir
+          </Button>
+          <Button
             nativeButton={false}
             render={
               <a href={`/admin/exportar${consultaFiltros ? `?${consultaFiltros}` : ""}`} />
@@ -125,7 +134,13 @@ export default async function PaginaExpedientes({
                   return (
                     <TableRow key={exp.id}>
                       <TableCell className="font-medium">
-                        {p ? `${p.nombre} ${p.apellido_paterno} ${p.apellido_materno ?? ""}` : "—"}
+                        {p ? (
+                          <Link href={`/captura/${exp.id}`} className="underline-offset-2 hover:underline">
+                            {p.nombre} {p.apellido_paterno} {p.apellido_materno ?? ""}
+                          </Link>
+                        ) : (
+                          "—"
+                        )}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {p?.fecha_nacimiento ?? "—"}

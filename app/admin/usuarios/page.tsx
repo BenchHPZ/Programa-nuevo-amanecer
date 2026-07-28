@@ -9,6 +9,10 @@ export const dynamic = "force-dynamic";
 
 export default async function PaginaUsuarios() {
   const supabase = await crearClienteServidor();
+  const {
+    data: { user: usuarioActual },
+  } = await supabase.auth.getUser();
+
   const { data: perfiles, error } = await supabase
     .from("usuario_perfil")
     .select("id, nombre, rol, estado, creado_en")
@@ -73,7 +77,7 @@ export default async function PaginaUsuarios() {
             </TableHeader>
             <TableBody>
               {usuarios.map((usuario) => (
-                <FilaUsuario key={usuario.id} usuario={usuario} />
+                <FilaUsuario key={usuario.id} usuario={usuario} usuarioActualId={usuarioActual?.id ?? ""} />
               ))}
             </TableBody>
           </Table>

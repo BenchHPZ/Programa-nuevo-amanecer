@@ -8,18 +8,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export const dynamic = "force-dynamic";
 
-function Conteo({ etiqueta, valor, resaltado }: { etiqueta: string; valor: number; resaltado?: boolean }) {
-  return (
-    <div className="rounded-md border p-3">
+function Conteo({
+  etiqueta,
+  valor,
+  resaltado,
+  href,
+}: {
+  etiqueta: string;
+  valor: number;
+  resaltado?: boolean;
+  href?: string;
+}) {
+  const contenido = (
+    <div className="rounded-md border p-3 transition-colors hover:bg-muted/50">
       <p className={`text-2xl font-semibold tabular-nums ${resaltado ? "" : "text-muted-foreground"}`}>
         {valor}
       </p>
       <p className="text-xs text-muted-foreground">{etiqueta}</p>
     </div>
   );
+  return href ? <Link href={href}>{contenido}</Link> : contenido;
 }
 
 export default async function PaginaAdmin() {
+  const hoy = new Date().toISOString().slice(0, 10);
   const jornada = await obtenerJornadaActiva();
 
   let conteos: {
@@ -68,21 +80,55 @@ export default async function PaginaAdmin() {
           <CardHeader>
             <CardTitle>Conteos de la jornada</CardTitle>
             <CardDescription>
-              {conteos?.expedientes_hoy ?? 0} expediente
-              {(conteos?.expedientes_hoy ?? 0) === 1 ? "" : "s"} y{" "}
-              {conteos?.dictaminados_hoy ?? 0} dictamen
-              {(conteos?.dictaminados_hoy ?? 0) === 1 ? "" : "es"} capturados hoy.
+              <Link href={`/admin/expedientes?desde=${hoy}&hasta=${hoy}`} className="underline underline-offset-2">
+                {conteos?.expedientes_hoy ?? 0} expediente{(conteos?.expedientes_hoy ?? 0) === 1 ? "" : "s"}
+              </Link>{" "}
+              y{" "}
+              <Link
+                href={`/admin/expedientes?dictaminadoDesde=${hoy}&dictaminadoHasta=${hoy}`}
+                className="underline underline-offset-2"
+              >
+                {conteos?.dictaminados_hoy ?? 0} dictamen{(conteos?.dictaminados_hoy ?? 0) === 1 ? "" : "es"}
+              </Link>{" "}
+              capturados hoy.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Conteo etiqueta="Expedientes" valor={conteos?.expedientes ?? 0} resaltado />
-            <Conteo etiqueta="En borrador" valor={conteos?.borradores ?? 0} />
-            <Conteo etiqueta="Completos, sin dictamen" valor={conteos?.completos ?? 0} />
-            <Conteo etiqueta="Dictaminados" valor={conteos?.dictaminados ?? 0} resaltado />
-            <Conteo etiqueta="Aptos para cirugía" valor={conteos?.apto_cirugia ?? 0} resaltado />
-            <Conteo etiqueta="Aptos para láser" valor={conteos?.apto_laser ?? 0} resaltado />
-            <Conteo etiqueta="No aptos" valor={conteos?.no_apto ?? 0} />
-            <Conteo etiqueta="Regresar en 6 meses" valor={conteos?.regresar_6_meses ?? 0} />
+            <Conteo etiqueta="Expedientes" valor={conteos?.expedientes ?? 0} resaltado href="/admin/expedientes" />
+            <Conteo
+              etiqueta="En borrador"
+              valor={conteos?.borradores ?? 0}
+              href="/admin/expedientes?estado=borrador"
+            />
+            <Conteo
+              etiqueta="Completos, sin dictamen"
+              valor={conteos?.completos ?? 0}
+              href="/admin/expedientes?estado=completo"
+            />
+            <Conteo
+              etiqueta="Dictaminados"
+              valor={conteos?.dictaminados ?? 0}
+              resaltado
+              href="/admin/expedientes?estado=dictaminado"
+            />
+            <Conteo
+              etiqueta="Aptos para cirugía"
+              valor={conteos?.apto_cirugia ?? 0}
+              resaltado
+              href="/admin/expedientes?dictamen=apto_cirugia"
+            />
+            <Conteo
+              etiqueta="Aptos para láser"
+              valor={conteos?.apto_laser ?? 0}
+              resaltado
+              href="/admin/expedientes?dictamen=apto_laser"
+            />
+            <Conteo etiqueta="No aptos" valor={conteos?.no_apto ?? 0} href="/admin/expedientes?dictamen=no_apto" />
+            <Conteo
+              etiqueta="Regresar en 6 meses"
+              valor={conteos?.regresar_6_meses ?? 0}
+              href="/admin/expedientes?dictamen=regresar_6_meses"
+            />
           </CardContent>
         </Card>
       )}

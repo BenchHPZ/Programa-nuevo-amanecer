@@ -62,20 +62,60 @@ export async function iniciarSesion(_estadoPrevio: unknown, formData: FormData) 
     return { error: traducirErrorAuth(error.message) };
   }
 
+  if (siguiente) {
+    redirect(siguiente);
+  }
+  await redirigirSegunRol(supabase, data.user.id);
+}
+
+/**
+ * A dónde manda el sistema a alguien ya autenticado, según su rol — usado
+ * al iniciar sesión y también al terminar de fijar contraseña nueva desde
+ * un enlace de invitación o restablecimiento (app/auth/nueva-contrasena).
+ * `redirect()` de Next.js interrumpe la ejecución lanzando, así que esta
+ * función nunca retorna normalmente para quien la llama.
+ */
+export async function redirigirSegunRol(
+  supabase: Awaited<ReturnType<typeof crearClienteServidor>>,
+  usuarioId: string,
+): Promise<never> {
   const { data: perfil } = await supabase
     .from("usuario_perfil")
     .select("estado, rol")
-    .eq("id", data.user.id)
+    .eq("id", usuarioId)
     .single();
 
   if (!perfil || perfil.estado !== "activo") {
     redirect("/auth/pendiente-aprobacion");
   }
-
-  if (siguiente) {
-    redirect(siguiente);
-  }
   redirect(perfil.rol ? DESTINO_POR_ROL[perfil.rol] : "/");
+}
+
+/**
+ * Termina el enlace de invitación o de restablecimiento de contraseña
+ * (app/auth/callback ya intercambió el código por sesión antes de llegar
+ * aquí). Exige sesión real — sin eso no hay a quién cambiarle la contraseña.
+ */
+export async function establecerNuevaContrasena(_estadoPrevio: unknown, formData: FormData) {
+  const password = String(formData.get("password") ?? "");
+  if (password.length < 8) {
+    return { error: "La contraseña debe tener al menos 8 caracteres." };
+  }
+
+  const supabase = await crearClienteServidor();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/auth/iniciar-sesion");
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return { error: traducirErrorAuth(error.message) };
+  }
+
+  await redirigirSegunRol(supabase, user.id);
 }
 
 export async function cerrarSesion() {

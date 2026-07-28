@@ -593,6 +593,7 @@ export type Database = {
           id: string
           notas: string | null
           tipo: Database["public"]["Enums"]["tipo_colaborador"]
+          usuario_id: string | null
         }
         Insert: {
           creado_en?: string
@@ -601,6 +602,7 @@ export type Database = {
           id?: string
           notas?: string | null
           tipo: Database["public"]["Enums"]["tipo_colaborador"]
+          usuario_id?: string | null
         }
         Update: {
           creado_en?: string
@@ -609,8 +611,17 @@ export type Database = {
           id?: string
           notas?: string | null
           tipo?: Database["public"]["Enums"]["tipo_colaborador"]
+          usuario_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "registro_colaborador_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuario_perfil"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       usuario_perfil: {
         Row: {
@@ -1001,6 +1012,8 @@ export const Constants = {
     },
   },
 } as const
+
+
 
 
 

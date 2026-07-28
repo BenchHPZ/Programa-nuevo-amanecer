@@ -6,9 +6,9 @@ import { FormularioInicioSesion } from "./formulario";
 export default async function PaginaIniciarSesion({
   searchParams,
 }: {
-  searchParams: Promise<{ siguiente?: string }>;
+  searchParams: Promise<{ siguiente?: string; error?: string }>;
 }) {
-  const { siguiente } = await searchParams;
+  const { siguiente, error } = await searchParams;
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted/30 p-4">
@@ -19,6 +19,7 @@ export default async function PaginaIniciarSesion({
           <CardDescription>Sistema de gestión de jornadas</CardDescription>
         </CardHeader>
         <CardContent>
+          {error ? <p className="mb-4 text-sm text-destructive">{error}</p> : null}
           <FormularioInicioSesion siguiente={siguiente ?? ""} />
         </CardContent>
       </Card>

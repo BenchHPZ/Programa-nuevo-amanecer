@@ -7,11 +7,17 @@ const eslintConfig = defineConfig([
   ...nextTs,
   // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    // Default ignores de eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generado por el CLI de Supabase (supabase start/stop) — ya ignorado
+    // por git (.gitignore), pero ESLint no lee .gitignore por sí solo.
+    // Sin esto, el runtime de edge functions embebido (minificado, una sola
+    // línea) se lintea como si fuera código propio.
+    "supabase/.temp/**",
+    "supabase/.branches/**",
   ]),
 ]);
 

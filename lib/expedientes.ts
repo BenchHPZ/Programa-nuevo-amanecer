@@ -31,6 +31,9 @@ export interface FiltrosExpediente {
   dictamen?: DictamenFiltro;
   desde?: string;
   hasta?: string;
+  /** Por fecha del dictamen, no de creación del expediente — para el drill-down "dictaminados hoy" del tablero. */
+  dictaminadoDesde?: string;
+  dictaminadoHasta?: string;
 }
 
 const ES_FECHA = /^\d{4}-\d{2}-\d{2}$/;
@@ -58,11 +61,15 @@ export function leerFiltros(sp: Record<string, string | string[] | undefined>): 
     dictamen: dentroDe<DictamenFiltro>(uno("dictamen"), [...RESULTADOS, SIN_DICTAMEN]),
     desde: fecha(uno("desde")),
     hasta: fecha(uno("hasta")),
+    dictaminadoDesde: fecha(uno("dictaminadoDesde")),
+    dictaminadoHasta: fecha(uno("dictaminadoHasta")),
   };
 }
 
 export function hayFiltros(f: FiltrosExpediente): boolean {
-  return Boolean(f.estado || f.servicio || f.dictamen || f.desde || f.hasta);
+  return Boolean(
+    f.estado || f.servicio || f.dictamen || f.desde || f.hasta || f.dictaminadoDesde || f.dictaminadoHasta,
+  );
 }
 
 export interface ExpedienteListado {
@@ -94,7 +101,11 @@ const CAMPOS_PACIENTE =
  * igual, con el embed vacío — el filtro parecería no hacer nada.
  */
 function construirSelect(filtros: FiltrosExpediente): string {
-  const dictamenInterno = filtros.dictamen && filtros.dictamen !== SIN_DICTAMEN ? "!inner" : "";
+  const necesitaDictamen =
+    (filtros.dictamen && filtros.dictamen !== SIN_DICTAMEN) ||
+    filtros.dictaminadoDesde ||
+    filtros.dictaminadoHasta;
+  const dictamenInterno = necesitaDictamen ? "!inner" : "";
   const folioInterno = filtros.servicio ? "!inner" : "";
 
   return [
@@ -134,6 +145,13 @@ export async function consultarExpedientes(
   // `hasta` es inclusivo: quien filtra "hasta el 5 de agosto" espera que el
   // día 5 entre completo, no que se corte a la medianoche de su inicio.
   if (filtros.hasta) consulta = consulta.lte("creado_en", `${filtros.hasta}T23:59:59.999`);
+
+  if (filtros.dictaminadoDesde) {
+    consulta = consulta.gte("dictamen_etapa1.fecha", `${filtros.dictaminadoDesde}T00:00:00`);
+  }
+  if (filtros.dictaminadoHasta) {
+    consulta = consulta.lte("dictamen_etapa1.fecha", `${filtros.dictaminadoHasta}T23:59:59.999`);
+  }
 
   consulta = consulta.order("creado_en", { ascending: false });
 

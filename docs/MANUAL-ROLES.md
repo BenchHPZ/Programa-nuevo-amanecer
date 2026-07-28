@@ -1,7 +1,7 @@
 # Manual por rol
 
 **Programa Nuevo Amanecer, A.C. — sistema de gestión de jornadas**
-Versión 1.1 · 4 de agosto de 2026
+Versión 1.2 · 5 de agosto de 2026
 
 Este documento responde una sola pregunta: **¿qué me toca a mí?**
 
@@ -55,8 +55,10 @@ Comprobado con las cuentas de cada rol contra las políticas de la base.
 | Registrar o corregir el dictamen | ❌ | ✅ | ✅ | ❌ |
 | Imprimir folios y constancias | ✅ | ✅ | ✅ | ✅ |
 | Exportar el padrón | ❌ | ❌ | ✅ | ❌ |
+| Imprimir listas filtradas del tablero de conteos | ❌ | ❌ | ✅ | ❌ |
 | Importar de contingencia | ❌ | ❌ | ✅ | ❌ |
-| Aprobar usuarios y asignar roles | ❌ | ❌ | ✅ | ❌ |
+| Aprobar usuarios, cambiarles el rol después e invitar directamente | ❌ | ❌ | ✅ | ❌ |
+| Generar un enlace temporal para que alguien restablezca su contraseña | ❌ | ❌ | ✅ | ❌ |
 | Crear jornadas y editar el catálogo | ❌ | ❌ | ✅ | ❌ |
 | Ver quién se ofreció a colaborar | ❌ | ❌ | ✅ | ❌ |
 
@@ -173,8 +175,20 @@ dictaminados, cuántos aptos para cirugía y para láser, cuántos no aptos.
 
 - **Todo lo del capturista**, además de lo tuyo.
 - **Aprobar usuarios y asignar roles.** Nadie entra al sistema sin que tú lo apruebes.
+- **Cambiarle el rol a alguien que ya está activo**, si cambió de función a media temporada —
+  desde `/admin/usuarios`, no hace falta suspenderlo y volver a aprobarlo.
+- **Generar un enlace temporal para que alguien restablezca su contraseña**, si la olvidó. El
+  sistema te muestra el enlace para copiarlo y compartirlo como prefieras (WhatsApp, correo
+  personal); no se envía solo, porque el proyecto no tiene correo propio configurado.
+- **Invitar directamente a un colaborador** desde la bandeja de `/admin/colaboradores` —le
+  asignas el rol ahí mismo y le compartes el enlace para que fije su propia contraseña la primera
+  vez. No pasa por el registro público ni por la aprobación aparte: al invitarlo con un rol, ya
+  lo estás aprobando.
 - **Corregir un dictamen** cuando el médico ya no está disponible.
 - **Exportar el padrón** a CSV, con los filtros que apliques.
+- **Hacer clic en cualquier número del tablero de conteos** para ver la lista de personas detrás
+  de esa cifra, e **imprimirla** con una vista mínima (nombre, fecha de nacimiento, estado o
+  dictamen, folio) para no cargar más datos personales de los necesarios en el papel.
 - **Importar** lo capturado en papel durante una contingencia.
 - Crear jornadas, editar el catálogo de campos y revisar quién se ofreció a colaborar.
 
@@ -182,8 +196,8 @@ dictaminados, cuántos aptos para cirugía y para láser, cuántos no aptos.
 
 - **Borrar.** Nada se borra en este sistema, ni tú. Las correcciones conservan el valor anterior.
   Es exigencia de la NOM-004, no una decisión de diseño.
-- **Ocultar tu rastro.** Cada exportación queda anotada con tu nombre, la hora, los filtros que
-  usaste y cuántas filas te llevaste.
+- **Ocultar tu rastro.** Cada exportación —y cada impresión de una lista del tablero— queda
+  anotada con tu nombre, la hora, los filtros que usaste y cuántas filas te llevaste.
 
 **Tus dos responsabilidades más delicadas**
 

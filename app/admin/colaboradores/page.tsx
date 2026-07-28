@@ -27,6 +27,7 @@ interface FilaCruda {
   estado: string;
   datos: DatosColaboradorGuardados;
   creado_en: string;
+  usuario_id: string | null;
 }
 
 export default async function PaginaColaboradores({
@@ -42,7 +43,7 @@ export default async function PaginaColaboradores({
   const supabase = await crearClienteServidor();
   let consulta = supabase
     .from("registro_colaborador")
-    .select("id, tipo, estado, datos, creado_en")
+    .select("id, tipo, estado, datos, creado_en, usuario_id")
     .order("creado_en", { ascending: false });
 
   if (tipo) consulta = consulta.eq("tipo", tipo as never);
@@ -140,6 +141,7 @@ export default async function PaginaColaboradores({
                     estado={f.estado}
                     datos={f.datos}
                     creadoEn={f.creado_en}
+                    usuarioId={f.usuario_id}
                   />
                 ))}
               </TableBody>
