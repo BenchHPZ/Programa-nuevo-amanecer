@@ -192,6 +192,7 @@ y evaluación de servidor local · reportes de la jornada.
 ```
 Check-in (QR) ──► LÁSER: lista + pantalla de llamado + encuesta
               └─► CIRUGÍA:
+                   Pantalla de llamado
                    Primer contacto (residentes)
                       checklist de papelería del hospital
                       + carta de consentimiento informado (2 testigos)
@@ -204,6 +205,8 @@ Check-in (QR) ──► LÁSER: lista + pantalla de llamado + encuesta
                    Evaluación prequirúrgica  (sí / no)
                         ▼
                    Programador → asigna quirófano y bloque horario
+                  
+                   Encesuta posterior a fin de evento
 ```
 
 Todo queda trazado: quién atendió en primer contacto, qué autorizador aprobó, a qué hora, qué
@@ -217,7 +220,7 @@ anuales · tablero de indicadores · **documentación normativa completa**, con 
 bajo la estructura: qué dice · cómo nos aplica · cumplimiento mínimo viable · cumplimiento ideal
 · estado actual y brecha. Esa columna de brecha es el insumo directo de la Etapa 4.
 
-### Etapa 4 — Certificación SIRES (~1er trimestre 2027)
+### Etapa 4 — Certificación SIRES (~fin 1er trimestre 2027)
 
 Cerrar la brecha · identificar GIIS aplicables · adoptar CLUES y CIE-10 · registro de OID ·
 interoperabilidad HL7 · acreditar los 6 meses de madurez del sistema de seguridad · Dictamen

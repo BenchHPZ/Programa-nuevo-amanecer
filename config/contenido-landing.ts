@@ -23,12 +23,12 @@ export const POR_CONFIRMAR = "[por confirmar]";
 export const ORGANIZACION = {
   nombreLegal: "Programa Nuevo Amanecer, A.C.",
   nombreCorto: "Programa Nuevo Amanecer",
-  lema: "Desde 1984, provocando la sonrisa de niñas y niños con labio y paladar hendido.",
+  lema: "Desde 1984, cuidando la sonrisa de niñas y niños con labio y paladar hendido.",
   fundacion: 1984,
 };
 
 export const CIFRAS = [
-  { valor: "40 años", detalle: "de jornadas ininterrumpidas desde 1984" },
+  { valor: "+40 años", detalle: "de jornadas ininterrumpidas desde 1984" },
   { valor: "+4,700", detalle: "procedimientos quirúrgicos realizados" },
   { valor: "~200", detalle: "niñas y niños atendidos cada año" },
   { valor: "2", detalle: "jornadas al año, cada seis meses" },
@@ -51,20 +51,30 @@ export const SERVICIOS = [
  */
 export const PASOS = [
   {
-    titulo: "1. Primera revisión",
+    titulo: "1 - Revisión preliminar",
     texto:
       "Durante una semana, personal médico revisa a cada paciente y decide si es candidato a cirugía o a tratamiento láser. A quien es candidato se le entrega un folio.",
   },
   {
-    titulo: "2. Segunda revisión",
+    titulo: "2 - Revisión especializada",
     texto:
-      "Alrededor de mes y medio después, especialistas hacen la valoración completa y se programa el quirófano. El folio de la primera revisión es la entrada.",
+      "Alrededor de un mes después, especialistas hacen la valoración completa y se programa el quirófano. El folio de la primera revisión es la entrada.",
   },
   {
-    titulo: "3. Cirugía y seguimiento",
+    titulo: "3 - Intervenciones médicas",
     texto:
-      "La cirugía se realiza sin costo para la familia. Después continúa el acompañamiento: terapia de lenguaje, ortodoncia y las cirugías que hagan falta con los años.",
+      "La cirugía y los tratamientos estéticos se realizan sin costo para la familia. Siempre con el apoyo de las diversas instituciones y los varios benefactores que siempre nos han apoyado.",
   },
+  {
+    titulo: "3 - Seguimiento",
+    texto:
+      "El acompañamiento continua. Tenemos aliados que apoyan con tratamientos auxiliares: terapia de lenguaje, ortodoncia, nutrición, psicología, entre otros",
+  },
+  {
+    titulo: "🔁 Repetimos 🔁",
+    texto:
+      "Este es un trabajo largo, a muchas personas las vemos por varios años y tras múltiples intervenciones. Cada seis meses se repite el ciclo."
+  }
 ];
 
 /**
@@ -84,9 +94,11 @@ export type CategoriaAliado = "sede" | "institucional" | "quirurgico" | "academi
 export const ETIQUETA_CATEGORIA: Record<CategoriaAliado, string> = {
   sede: "Sedes hospitalarias",
   institucional: "Respaldo institucional",
-  quirurgico: "Equipos quirúrgicos que se suman",
-  academico: "Academia y voluntariado estudiantil",
+  quirurgico: "Equipos quirúrgicos que suman",
+  academico: "Voluntariado académico y estudiantil",
 };
+
+
 
 export const ALIADOS_INSTITUCIONALES: {
   nombre: string;
@@ -104,18 +116,33 @@ export const ALIADOS_INSTITUCIONALES: {
     categoria: "sede",
   },
   {
+    nombre: "Fundación Hospitales MAC",
+    aporte: "Sede ocasional de las jornadas extras: quirófanos, material quirúrgico, hospitalización, personal enfermería",
+    categoria: "sede",
+  },
+  {
+    nombre: "Clínica Médica Guanajauto",
+    aporte: "Sede principal de actuación, concebida como espacio polivalente de actividades rutinarias y especializadas",
+    categoria: "sede",
+  },
+  {
     nombre: "Secretaría de Salud de Guanajuato",
     aporte: "Coordinación estatal, difusión y organización de las jornadas",
     categoria: "institucional",
   },
   {
-    nombre: "DIF Estatal Guanajuato",
+    nombre: "DIF Municipal Guanajuato",
     aporte: "Acompañamiento psicosocial y terapia de lenguaje para las familias",
     categoria: "institucional",
   },
   {
-    nombre: "Patronato del Hospital General de Guanajuato",
+    nombre: "Patronato del albergue Hospital General de Guanajuato",
     aporte: "Alojamiento y alimentación para las familias durante la jornada",
+    categoria: "institucional",
+  },
+  {
+    nombre: "Asoceación Mexicana de Diabetes Santa Fe de Guanajuato",
+    aporte: "Apoyo incondicional en salúd preventiva y detección temprana, además de atención a familias",
     categoria: "institucional",
   },
   {
@@ -144,7 +171,7 @@ export const ALIADOS_INSTITUCIONALES: {
     categoria: "quirurgico",
   },
   {
-    nombre: "Universidad de Guanajuato",
+    nombre: "División de Ciencias Naturales y Exactas - Universidad de Guanajuato",
     aporte: "Servicio social de estudiantes de enfermería",
     categoria: "academico",
   },
@@ -212,7 +239,7 @@ export const SALON_DE_LA_FAMA: Reconocimiento[] = [
     nombre: "Familia Ledezma",
     papel: "Benefactores del programa",
     institucion: "Apoyo financiero y logístico",
-    silueta: "femenina",
+    silueta: "masculina",
   },
 ];
 
