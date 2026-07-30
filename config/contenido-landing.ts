@@ -79,7 +79,9 @@ export const PASOS = [
 
 /**
  * Instituciones aliadas, tomadas de docs/COLABORADORES.md, que es la fuente
- * con verificación explícita.
+ * con verificación explícita. Incluye también a empresas y benefactores
+ * (categoría `donante`) — antes vivían aparte, en un arreglo de puros
+ * nombres; se mezclan aquí para que reciban el mismo trato de tarjeta.
  *
  * La **sede no se fija aquí**: sale de `jornada.sede` en la base, porque ha
  * cambiado. El ISSSTE fue la sede de 1984 a 2024 —reconocido con placa a los
@@ -88,22 +90,27 @@ export const PASOS = [
  *
  * Conviene confirmar con cada institución antes de salir a producción:
  * aparecer como aliado en un sitio público suele requerir su visto bueno.
+ * Publicar su **logo** es lo mismo, pero de su marca: mismo permiso a pedir,
+ * no uno aparte. Sin logo, la tarjeta se ve bien con la silueta de su
+ * categoría — no hay prisa por conseguirlos todos.
  */
-export type CategoriaAliado = "sede" | "institucional" | "quirurgico" | "academico";
+export type CategoriaAliado = "sede" | "institucional" | "quirurgico" | "academico" | "donante";
 
 export const ETIQUETA_CATEGORIA: Record<CategoriaAliado, string> = {
   sede: "Sedes hospitalarias",
   institucional: "Respaldo institucional",
   quirurgico: "Equipos quirúrgicos que suman",
   academico: "Voluntariado académico y estudiantil",
+  donante: "Empresas y benefactores",
 };
-
-
 
 export const ALIADOS_INSTITUCIONALES: {
   nombre: string;
-  aporte: string;
+  /** Sedes y hospitales sí lo tienen; un donante no siempre necesita uno. */
+  aporte?: string;
   categoria: CategoriaAliado;
+  /** Ruta en /public/aliados. Si falta, se dibuja la silueta de la categoría. */
+  logo?: string;
 }[] = [
   {
     nombre: "Clínica Hospital ISSSTE Guanajuato",
@@ -175,17 +182,18 @@ export const ALIADOS_INSTITUCIONALES: {
     aporte: "Servicio social de estudiantes de enfermería",
     categoria: "academico",
   },
-];
-
-/**
- * Empresas y benefactores. **Requieren permiso expreso de cada uno** antes de
- * publicarse: normalmente va con convenio. Vaciar este arreglo los quita de
- * la landing sin tocar nada más.
- */
-export const DONANTES = [
-  "Cardinal Health",
-  "Medtronic",
-  "Fundación Liomont",
+  {
+    nombre: "Cardinal Health",
+    categoria: "donante",
+  },
+  {
+    nombre: "Medtronic",
+    categoria: "donante",
+  },
+  {
+    nombre: "Fundación Liomont",
+    categoria: "donante",
+  },
 ];
 
 /**

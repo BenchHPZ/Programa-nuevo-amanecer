@@ -12,7 +12,8 @@
  * `config/contenido-landing.ts` — **nunca se deduce del nombre**.
  */
 
-function Marco({ children }: { children: React.ReactNode }) {
+/** Exportado para que components/landing/siluetas-aliado.tsx reuse el mismo envoltorio. */
+export function Marco({ children }: { children: React.ReactNode }) {
   return (
     <svg
       viewBox="0 0 100 100"

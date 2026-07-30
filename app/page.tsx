@@ -1,10 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import {
   ALIADOS_INSTITUCIONALES,
   CIFRAS,
   CONTACTO,
-  DONANTES,
   ETIQUETA_CATEGORIA,
   HITOS,
   ORGANIZACION,
@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/marca/logo";
 import { SalonDeLaFama } from "@/components/landing/salon-de-la-fama";
+import { SiluetaAliado } from "@/components/landing/siluetas-aliado";
 import { BannerJornada } from "@/components/landing/banner-jornada";
 
 export const dynamic = "force-dynamic";
@@ -77,7 +78,7 @@ export default async function Inicio() {
           </h1>
           <p className="text-lg text-muted-foreground">
             Desde 1984, un equipo que dona su tiempo para operar, sin costo alguno, a niñas y
-            niños con labio y/o paladar hendido.
+            niños con labio o paladar hendido.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Button size="lg" nativeButton={false} render={<Link href="/pre-registro" />}>
@@ -158,7 +159,7 @@ export default async function Inicio() {
       <section className="border-t bg-muted/30 px-6 py-12">
         <div className="mx-auto max-w-4xl space-y-6">
           <h2 className="text-2xl font-semibold tracking-tight">Qué se atiende</h2>
-          <ul className="grid list-inside list-disc gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+          <ul className="grid list-inside list-disc gap-2 text-sm text-muted-foreground sm:grid-cols-3">
             {SERVICIOS.map((s) => (
               <li key={s}>{s}</li>
             ))}
@@ -170,14 +171,14 @@ export default async function Inicio() {
         </div>
       </section>
 
-      {/* ── Salón de la fama ── */}
+      {/* ── Agradecimientos ── */}
       <section className="mx-auto w-full max-w-4xl px-6 py-12">
         <div className="mb-6 space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight">Salón de la fama</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Agradecimientos</h2>
           <p className="text-muted-foreground">
-            Cerca de treinta especialistas se suman a cada jornada y ninguno cobra honorarios.
+            Inumerables especialistas se suman a cada jornada y ninguno cobra honorarios.
             Esta es nuestra forma de dejar constancia, de manera permanente, de quienes hacen
-            posible el programa.
+            posible el programa; y de quienes nunca dudan en acudir al llamado para ayudar.
           </p>
         </div>
         <SalonDeLaFama personas={SALON_DE_LA_FAMA} />
@@ -222,21 +223,33 @@ export default async function Inicio() {
               <p className="text-sm font-medium">{ETIQUETA_CATEGORIA[categoria]}</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {aliadosPorCategoria[categoria].map((a) => (
-                  <div key={a.nombre} className="rounded-md border p-3">
-                    <p className="text-sm font-medium">{a.nombre}</p>
-                    <p className="text-xs text-muted-foreground">{a.aporte}</p>
+                  <div key={a.nombre} className="flex items-start gap-3 rounded-md border p-3">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border bg-accent text-accent-foreground">
+                      {a.logo ? (
+                        <Image
+                          src={a.logo}
+                          alt={a.nombre}
+                          width={56}
+                          height={56}
+                          className="h-full w-full object-contain p-1"
+                        />
+                      ) : (
+                        <div className="p-2.5">
+                          <SiluetaAliado categoria={a.categoria} />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{a.nombre}</p>
+                      {a.aporte ? (
+                        <p className="text-xs text-muted-foreground">{a.aporte}</p>
+                      ) : null}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           ))}
-
-          {DONANTES.length > 0 && (
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Empresas y benefactores</p>
-              <p className="text-sm text-muted-foreground">{DONANTES.join(" · ")}</p>
-            </div>
-          )}
         </div>
       </section>
 
