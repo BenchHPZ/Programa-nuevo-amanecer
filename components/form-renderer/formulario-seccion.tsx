@@ -24,6 +24,7 @@ export function FormularioSeccion({
 }) {
   const [datos, setDatos] = useState<DatosSeccion>(datosIniciales);
   const [estadoGuardado, setEstadoGuardado] = useState<EstadoGuardado>("guardado");
+  const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export function FormularioSeccion({
       setEstadoGuardado("guardando");
       const completa = seccionCompleta(campos, siguiente);
       const r = await guardarSeccion(expedienteId, seccion, siguiente, completa);
+      setErrorGuardado(r.error ?? null);
       setEstadoGuardado(r.error ? "error" : "guardado");
     }, ESPERA_AUTOGUARDADO_MS);
   }
@@ -57,7 +59,7 @@ export function FormularioSeccion({
         ))}
       </div>
       <div className="flex items-center justify-between">
-        <IndicadorGuardado estado={estadoGuardado} />
+        <IndicadorGuardado estado={estadoGuardado} error={errorGuardado} />
         <Badge variant={completa ? "default" : "secondary"}>
           {completa ? "Sección completa" : "Faltan campos obligatorios"}
         </Badge>
@@ -66,12 +68,15 @@ export function FormularioSeccion({
   );
 }
 
-function IndicadorGuardado({ estado }: { estado: EstadoGuardado }) {
+function IndicadorGuardado({ estado, error }: { estado: EstadoGuardado; error?: string | null }) {
   const texto: Record<EstadoGuardado, string> = {
     guardado: "Guardado",
     pendiente: "Cambios sin guardar…",
     guardando: "Guardando…",
-    error: "No se pudo guardar — revisa tu conexión",
+    // Se muestra el motivo real cuando lo hay — "revisa tu conexión" era un
+    // texto genérico que ocultaba la causa real (p. ej. RLS, formato, un
+    // esquema desincronizado) tanto a quien captura como a quien depura.
+    error: error ? `No se pudo guardar: ${error}` : "No se pudo guardar — revisa tu conexión",
   };
   const color: Record<EstadoGuardado, string> = {
     guardado: "text-muted-foreground",

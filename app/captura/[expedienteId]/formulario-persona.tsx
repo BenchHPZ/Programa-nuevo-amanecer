@@ -64,6 +64,7 @@ export function FormularioPersona({ personaId, inicial }: { personaId: string; i
   const [datos, setDatos] = useState(inicial);
   const [errores, setErrores] = useState<Partial<Record<CampoValidado, string>>>({});
   const [estadoGuardado, setEstadoGuardado] = useState<EstadoGuardado>("guardado");
+  const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -92,6 +93,7 @@ export function FormularioPersona({ personaId, inicial }: { personaId: string; i
     temporizador.current = setTimeout(async () => {
       setEstadoGuardado("guardando");
       const r = await actualizarPersona(personaId, siguiente);
+      setErrorGuardado(r.error ?? null);
       setEstadoGuardado(r.error ? "error" : "guardado");
     }, ESPERA_AUTOGUARDADO_MS);
   }
@@ -206,7 +208,7 @@ export function FormularioPersona({ personaId, inicial }: { personaId: string; i
           <Input value={datos.direccion ?? ""} onChange={(e) => actualizar("direccion", e.target.value || null)} />
         </Campo>
       </div>
-      <IndicadorGuardado estado={estadoGuardado} />
+      <IndicadorGuardado estado={estadoGuardado} error={errorGuardado} />
     </div>
   );
 }
@@ -231,12 +233,15 @@ function Campo({
   );
 }
 
-function IndicadorGuardado({ estado }: { estado: EstadoGuardado }) {
+function IndicadorGuardado({ estado, error }: { estado: EstadoGuardado; error?: string | null }) {
   const texto: Record<EstadoGuardado, string> = {
     guardado: "Guardado",
     pendiente: "Cambios sin guardar…",
     guardando: "Guardando…",
-    error: "No se pudo guardar — revisa tu conexión",
+    // Se muestra el motivo real cuando lo hay — "revisa tu conexión" era un
+    // texto genérico que ocultaba la causa real (p. ej. RLS, formato, un
+    // esquema desincronizado) tanto a quien captura como a quien depura.
+    error: error ? `No se pudo guardar: ${error}` : "No se pudo guardar — revisa tu conexión",
   };
   const color: Record<EstadoGuardado, string> = {
     guardado: "text-muted-foreground",
