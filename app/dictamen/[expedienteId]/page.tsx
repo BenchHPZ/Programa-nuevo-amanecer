@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { generarQrSvg } from "@/lib/qr";
+import { puedeGestionarFotos } from "@/lib/permisos";
 import { urlFirmadaPapeleria } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormularioSeccion } from "@/components/form-renderer/formulario-seccion";
 import type { DatosSeccion, DefinicionCatalogo } from "@/components/form-renderer/tipos";
-import { FotoPaciente } from "@/components/expediente/foto-paciente";
+import { FotoPaciente, type FotoInfo } from "@/components/expediente/foto-paciente";
 import type { EstadoExpediente, ResultadoDictamen, Tables } from "@/lib/supabase/tipos";
 
 import { FormularioDictamen } from "./formulario-dictamen";
@@ -64,25 +65,28 @@ export default async function PaginaDictamenExpediente({
 
   if (!expediente || !expediente.paciente) notFound();
 
-  const [{ data: vinculos }, { data: catalogos }, { data: seccionesGuardadas }, { data: fotos }] = await Promise.all([
-    supabase
-      .from("paciente_responsable")
-      .select("parentesco, es_principal, responsable:responsable_id(*)")
-      .eq("paciente_id", expediente.paciente_id)
-      .order("es_principal", { ascending: false }),
-    supabase
-      .from("catalogo_campos")
-      .select("seccion, definicion")
-      .eq("jornada_id", expediente.jornada_id)
-      .eq("vigente", true),
-    supabase.from("expediente_seccion").select("seccion, datos").eq("expediente_id", expediente.id),
-    supabase
-      .from("documento")
-      .select("archivo_path")
-      .eq("expediente_id", expediente.id)
-      .eq("tipo", "foto_paciente")
-      .order("creado_en", { ascending: false }),
-  ]);
+  const [{ data: vinculos }, { data: catalogos }, { data: seccionesGuardadas }, { data: fotos }, puedeEliminarFotos] =
+    await Promise.all([
+      supabase
+        .from("paciente_responsable")
+        .select("parentesco, es_principal, responsable:responsable_id(*)")
+        .eq("paciente_id", expediente.paciente_id)
+        .order("es_principal", { ascending: false }),
+      supabase
+        .from("catalogo_campos")
+        .select("seccion, definicion")
+        .eq("jornada_id", expediente.jornada_id)
+        .eq("vigente", true),
+      supabase.from("expediente_seccion").select("seccion, datos").eq("expediente_id", expediente.id),
+      supabase
+        .from("documento")
+        .select("id, archivo_path, vista_foto")
+        .eq("expediente_id", expediente.id)
+        .eq("tipo", "foto_paciente")
+        .eq("activo", true)
+        .order("creado_en", { ascending: false }),
+      puedeGestionarFotos(supabase),
+    ]);
 
   const jornada = Array.isArray(expediente.jornada) ? expediente.jornada[0] : expediente.jornada;
   const principal = vinculos?.[0];
@@ -92,9 +96,16 @@ export default async function PaginaDictamenExpediente({
     ? await supabase.from("usuario_perfil").select("nombre").eq("id", dictamen.medico_id).maybeSingle()
     : { data: null };
   const qrSvg = folioActivo ? await generarQrSvg(folioActivo.folio_texto) : null;
-  const urlsFotoPaciente = (
-    await Promise.all((fotos ?? []).map((f) => urlFirmadaPapeleria(f.archivo_path)))
-  ).filter((url): url is string => url !== null);
+  const fotosPacienteConNulos = await Promise.all(
+    (fotos ?? []).map(async (f) => ({
+      id: f.id,
+      vista: f.vista_foto,
+      url: await urlFirmadaPapeleria(f.archivo_path),
+    })),
+  );
+  const fotosPaciente: FotoInfo[] = fotosPacienteConNulos.filter(
+    (f): f is FotoInfo => f.url !== null && f.vista !== null,
+  );
 
   const catalogoAntecedentes = catalogos?.find((c) => c.seccion === "antecedentes");
   const definicionAntecedentes = catalogoAntecedentes?.definicion as unknown as DefinicionCatalogo | undefined;
@@ -176,7 +187,12 @@ export default async function PaginaDictamenExpediente({
           <CardTitle>Foto del paciente</CardTitle>
         </CardHeader>
         <CardContent>
-          <FotoPaciente expedienteId={expediente.id} urls={urlsFotoPaciente} editable />
+          <FotoPaciente
+            expedienteId={expediente.id}
+            fotos={fotosPaciente}
+            editable
+            puedeEliminar={puedeEliminarFotos}
+          />
         </CardContent>
       </Card>
 
@@ -189,7 +205,7 @@ export default async function PaginaDictamenExpediente({
             <FormularioSeccion
               expedienteId={expediente.id}
               seccion="antecedentes"
-              campos={definicionAntecedentes.campos}
+              definicion={definicionAntecedentes}
               datosIniciales={(seccionAntecedentes?.datos as unknown as DatosSeccion) ?? {}}
             />
           ) : (

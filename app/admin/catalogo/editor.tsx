@@ -47,8 +47,11 @@ export function EditorCatalogo({
           {versionActual ? <Badge variant="secondary">versión {versionActual}</Badge> : null}
         </div>
         <CardDescription>
-          JSON con la forma <code>{"{ campos: [{ clave, etiqueta, tipo, requerido?, opciones? }] }"}</code>.
-          Tipos válidos: texto, texto_largo, numero, booleano, fecha, seleccion, seleccion_multiple.
+          JSON con la forma <code>{"{ campos: [{ clave, etiqueta, tipo, requerido?, opciones? }] }"}</code>,
+          o agrupado en subsecciones con{" "}
+          <code>{"{ subsecciones: [{ titulo, campos: [...] }] }"}</code> (se muestran juntas
+          en la misma sección, separadas por su título). Tipos válidos: texto, texto_largo,
+          numero, booleano, fecha, seleccion, seleccion_multiple.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">

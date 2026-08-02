@@ -3,18 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { crearClienteServidor } from "@/lib/supabase/server";
-import type { RolUsuario } from "@/lib/supabase/tipos";
-
-const DESTINO_POR_ROL: Record<RolUsuario, string> = {
-  administrativo: "/admin",
-  capturista: "/captura",
-  informista: "/captura",
-  medico_triage: "/dictamen",
-  primer_contacto: "/",
-  autorizador: "/",
-  evaluador_prequirurgico: "/",
-  programador: "/",
-};
+import { DESTINO_POR_ROL } from "@/lib/roles";
 
 export async function registrarUsuario(_estadoPrevio: unknown, formData: FormData) {
   const nombre = String(formData.get("nombre") ?? "").trim();

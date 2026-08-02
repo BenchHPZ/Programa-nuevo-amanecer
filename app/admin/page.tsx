@@ -1,9 +1,7 @@
 import Link from "next/link";
 
-import { cerrarSesion } from "@/app/auth/acciones";
 import { obtenerJornadaActiva } from "@/lib/jornada";
 import { crearClienteServidor } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
@@ -61,18 +59,11 @@ export default async function PaginaAdmin() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Panel administrativo</h1>
-          <p className="text-muted-foreground">
-            {jornada ? jornada.nombre : "Sin jornada activa"}
-          </p>
-        </div>
-        <form action={cerrarSesion}>
-          <Button variant="outline" type="submit">
-            Cerrar sesión
-          </Button>
-        </form>
+      <div>
+        <h1 className="text-2xl font-semibold">Panel administrativo</h1>
+        <p className="text-muted-foreground">
+          {jornada ? jornada.nombre : "Sin jornada activa"}
+        </p>
       </div>
 
       {jornada && (

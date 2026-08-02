@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { puedeGestionarFotos } from "@/lib/permisos";
 import { urlFirmadaPapeleria } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +11,7 @@ import type { EstadoExpediente } from "@/lib/supabase/tipos";
 
 import { FormularioSeccion } from "@/components/form-renderer/formulario-seccion";
 import type { DatosSeccion, DefinicionCatalogo } from "@/components/form-renderer/tipos";
-import { FotoPaciente } from "@/components/expediente/foto-paciente";
+import { FotoPaciente, type FotoInfo } from "@/components/expediente/foto-paciente";
 
 import { FormularioPersona } from "./formulario-persona";
 import { Papeleria } from "./papeleria";
@@ -123,16 +124,17 @@ export default async function PaginaExpediente({
         .order("creado_en", { ascending: false }),
       supabase
         .from("documento")
-        .select("archivo_path")
+        .select("id, archivo_path, vista_foto")
         .eq("expediente_id", expediente.id)
         .eq("tipo", "foto_paciente")
+        .eq("activo", true)
         .order("creado_en", { ascending: false }),
     ]);
 
   const principal = vinculos?.[0];
   const jornada = Array.isArray(expediente.jornada) ? expediente.jornada[0] : expediente.jornada;
 
-  const [consentimientosConUrl, documentosConUrl, urlsFotoPacienteConNulos] = await Promise.all([
+  const [consentimientosConUrl, documentosConUrl, fotosConUrlYNulos, puedeEliminarFotos] = await Promise.all([
     Promise.all(
       (consentimientos ?? [])
         .filter((c) => c.tipo !== "consentimiento_informado")
@@ -150,9 +152,18 @@ export default async function PaginaExpediente({
         url: await urlFirmadaPapeleria(d.archivo_path),
       })),
     ),
-    Promise.all((fotos ?? []).map((f) => urlFirmadaPapeleria(f.archivo_path))),
+    Promise.all(
+      (fotos ?? []).map(async (f) => ({
+        id: f.id,
+        vista: f.vista_foto,
+        url: await urlFirmadaPapeleria(f.archivo_path),
+      })),
+    ),
+    puedeGestionarFotos(supabase),
   ]);
-  const urlsFotoPaciente = urlsFotoPacienteConNulos.filter((url): url is string => url !== null);
+  const fotosPaciente: FotoInfo[] = fotosConUrlYNulos.filter(
+    (f): f is FotoInfo => f.url !== null && f.vista !== null,
+  );
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
@@ -203,7 +214,12 @@ export default async function PaginaExpediente({
           <CardTitle>Foto del paciente</CardTitle>
         </CardHeader>
         <CardContent>
-          <FotoPaciente expedienteId={expediente.id} urls={urlsFotoPaciente} editable={false} />
+          <FotoPaciente
+            expedienteId={expediente.id}
+            fotos={fotosPaciente}
+            editable={false}
+            puedeEliminar={puedeEliminarFotos}
+          />
         </CardContent>
       </Card>
 
@@ -235,7 +251,7 @@ export default async function PaginaExpediente({
               <FormularioSeccion
                 expedienteId={expediente.id}
                 seccion={seccion}
-                campos={definicion.campos}
+                definicion={definicion}
                 datosIniciales={(guardado?.datos as unknown as DatosSeccion) ?? {}}
               />
             </CardContent>

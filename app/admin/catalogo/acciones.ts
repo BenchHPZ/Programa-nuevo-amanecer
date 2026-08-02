@@ -17,27 +17,55 @@ const TIPOS_VALIDOS = new Set([
   "seleccion_multiple",
 ]);
 
-function validarDefinicion(json: unknown): string | null {
-  if (typeof json !== "object" || json === null || !("campos" in json)) {
-    return 'Debe ser un objeto con la forma { "campos": [...] }.';
-  }
-  const campos = (json as { campos: unknown }).campos;
-  if (!Array.isArray(campos)) return '"campos" debe ser un arreglo.';
+function validarCampos(campos: unknown, prefijo = ""): string | null {
+  if (!Array.isArray(campos)) return `${prefijo}"campos" debe ser un arreglo.`;
   for (const [i, c] of campos.entries()) {
-    if (typeof c !== "object" || c === null) return `El campo #${i + 1} no es un objeto.`;
+    if (typeof c !== "object" || c === null) return `${prefijo}El campo #${i + 1} no es un objeto.`;
     const campo = c as Record<string, unknown>;
-    if (typeof campo.clave !== "string" || !campo.clave) return `El campo #${i + 1} necesita "clave".`;
-    if (typeof campo.etiqueta !== "string" || !campo.etiqueta) return `El campo #${i + 1} necesita "etiqueta".`;
+    if (typeof campo.clave !== "string" || !campo.clave) return `${prefijo}El campo #${i + 1} necesita "clave".`;
+    if (typeof campo.etiqueta !== "string" || !campo.etiqueta) return `${prefijo}El campo #${i + 1} necesita "etiqueta".`;
     if (typeof campo.tipo !== "string" || !TIPOS_VALIDOS.has(campo.tipo)) {
-      return `El campo #${i + 1} ("${campo.clave}") tiene un "tipo" inválido. Válidos: ${[...TIPOS_VALIDOS].join(", ")}.`;
+      return `${prefijo}El campo #${i + 1} ("${campo.clave}") tiene un "tipo" inválido. Válidos: ${[...TIPOS_VALIDOS].join(", ")}.`;
     }
     if (
       (campo.tipo === "seleccion" || campo.tipo === "seleccion_multiple") &&
       (!Array.isArray(campo.opciones) || campo.opciones.length === 0)
     ) {
-      return `El campo #${i + 1} ("${campo.clave}") es de selección y necesita "opciones" (arreglo no vacío).`;
+      return `${prefijo}El campo #${i + 1} ("${campo.clave}") es de selección y necesita "opciones" (arreglo no vacío).`;
     }
   }
+  return null;
+}
+
+/**
+ * Acepta la forma plana original ({ campos }) y/o la nueva forma agrupada
+ * ({ subsecciones }), para que "Historia clínica" pueda organizarse en
+ * subsecciones nombradas sin dejar de admitir catálogos ya guardados.
+ */
+function validarDefinicion(json: unknown): string | null {
+  if (typeof json !== "object" || json === null || (!("campos" in json) && !("subsecciones" in json))) {
+    return 'Debe ser un objeto con la forma { "campos": [...] } o { "subsecciones": [...] }.';
+  }
+  const obj = json as Record<string, unknown>;
+
+  if ("campos" in obj) {
+    const error = validarCampos(obj.campos);
+    if (error) return error;
+  }
+
+  if ("subsecciones" in obj) {
+    if (!Array.isArray(obj.subsecciones)) return '"subsecciones" debe ser un arreglo.';
+    for (const [i, s] of obj.subsecciones.entries()) {
+      if (typeof s !== "object" || s === null) return `La subsección #${i + 1} no es un objeto.`;
+      const sub = s as Record<string, unknown>;
+      if (typeof sub.titulo !== "string" || !sub.titulo.trim()) {
+        return `La subsección #${i + 1} necesita "titulo".`;
+      }
+      const error = validarCampos(sub.campos, `Subsección "${sub.titulo}": `);
+      if (error) return error;
+    }
+  }
+
   return null;
 }
 

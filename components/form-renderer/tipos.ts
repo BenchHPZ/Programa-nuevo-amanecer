@@ -22,12 +22,46 @@ export interface CampoCatalogo {
   ayuda?: string;
 }
 
-export interface DefinicionCatalogo {
+/** Grupo nombrado de campos dentro de una sección (p. ej. Historia clínica). */
+export interface SubseccionCatalogo {
+  titulo: string;
   campos: CampoCatalogo[];
+}
+
+/**
+ * `campos` sigue siendo la forma plana original y `subsecciones` es la
+ * nueva forma agrupada — ambas opcionales para que un catálogo ya guardado
+ * sin `subsecciones` (o la sección "socioeconomico", que no las usa) siga
+ * funcionando sin cambios.
+ */
+export interface DefinicionCatalogo {
+  campos?: CampoCatalogo[];
+  subsecciones?: SubseccionCatalogo[];
 }
 
 export type ValorCampo = string | number | boolean | string[] | null | undefined;
 export type DatosSeccion = Record<string, ValorCampo>;
+
+/** Un grupo de campos ya normalizado para renderizar, con o sin título. */
+export interface GrupoCampos {
+  titulo?: string;
+  campos: CampoCatalogo[];
+}
+
+/**
+ * `subsecciones` tiene prioridad si está presente; si no, `campos` se trata
+ * como un único grupo sin título (comportamiento idéntico al de antes).
+ */
+export function normalizarGrupos(definicion: DefinicionCatalogo): GrupoCampos[] {
+  if (definicion.subsecciones?.length) {
+    return definicion.subsecciones.map((s) => ({ titulo: s.titulo, campos: s.campos }));
+  }
+  return [{ campos: definicion.campos ?? [] }];
+}
+
+export function todosLosCampos(definicion: DefinicionCatalogo): CampoCatalogo[] {
+  return normalizarGrupos(definicion).flatMap((g) => g.campos);
+}
 
 /** Un campo requerido cuenta como lleno si no es null/undefined/""/[] . */
 export function seccionCompleta(campos: CampoCatalogo[], datos: DatosSeccion): boolean {

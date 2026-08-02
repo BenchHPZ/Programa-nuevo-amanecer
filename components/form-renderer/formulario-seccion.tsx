@@ -6,7 +6,7 @@ import { guardarSeccion } from "@/app/captura/acciones";
 import { Badge } from "@/components/ui/badge";
 
 import { Campo } from "./campo";
-import { type CampoCatalogo, type DatosSeccion, seccionCompleta } from "./tipos";
+import { type DatosSeccion, type DefinicionCatalogo, normalizarGrupos, seccionCompleta, todosLosCampos } from "./tipos";
 
 type EstadoGuardado = "guardado" | "pendiente" | "guardando" | "error";
 const ESPERA_AUTOGUARDADO_MS = 1200;
@@ -14,18 +14,21 @@ const ESPERA_AUTOGUARDADO_MS = 1200;
 export function FormularioSeccion({
   expedienteId,
   seccion,
-  campos,
+  definicion,
   datosIniciales,
 }: {
   expedienteId: string;
   seccion: "antecedentes" | "socioeconomico";
-  campos: CampoCatalogo[];
+  definicion: DefinicionCatalogo;
   datosIniciales: DatosSeccion;
 }) {
   const [datos, setDatos] = useState<DatosSeccion>(datosIniciales);
   const [estadoGuardado, setEstadoGuardado] = useState<EstadoGuardado>("guardado");
   const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const grupos = normalizarGrupos(definicion);
+  const camposPlanos = todosLosCampos(definicion);
 
   useEffect(() => {
     return () => {
@@ -40,24 +43,31 @@ export function FormularioSeccion({
     if (temporizador.current) clearTimeout(temporizador.current);
     temporizador.current = setTimeout(async () => {
       setEstadoGuardado("guardando");
-      const completa = seccionCompleta(campos, siguiente);
+      const completa = seccionCompleta(camposPlanos, siguiente);
       const r = await guardarSeccion(expedienteId, seccion, siguiente, completa);
       setErrorGuardado(r.error ?? null);
       setEstadoGuardado(r.error ? "error" : "guardado");
     }, ESPERA_AUTOGUARDADO_MS);
   }
 
-  const completa = seccionCompleta(campos, datos);
+  const completa = seccionCompleta(camposPlanos, datos);
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        {campos.map((campo) => (
-          <div key={campo.clave} className={campo.tipo === "texto_largo" ? "sm:col-span-2" : undefined}>
-            <Campo campo={campo} valor={datos[campo.clave]} onCambio={(v) => actualizar(campo.clave, v)} />
+      {grupos.map((grupo, i) => (
+        <div key={grupo.titulo ?? i} className={i > 0 ? "space-y-4 border-t pt-4" : "space-y-4"}>
+          {grupo.titulo && (
+            <h4 className="text-sm font-medium text-muted-foreground">{grupo.titulo}</h4>
+          )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {grupo.campos.map((campo) => (
+              <div key={campo.clave} className={campo.tipo === "texto_largo" ? "sm:col-span-2" : undefined}>
+                <Campo campo={campo} valor={datos[campo.clave]} onCambio={(v) => actualizar(campo.clave, v)} />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
       <div className="flex items-center justify-between">
         <IndicadorGuardado estado={estadoGuardado} error={errorGuardado} />
         <Badge variant={completa ? "default" : "secondary"}>

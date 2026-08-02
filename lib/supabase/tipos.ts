@@ -200,28 +200,34 @@ export type Database = {
       }
       documento: {
         Row: {
+          activo: boolean
           archivo_path: string
           creado_en: string
           expediente_id: string
           id: string
           subido_por: string | null
           tipo: Database["public"]["Enums"]["tipo_documento"]
+          vista_foto: Database["public"]["Enums"]["vista_foto"] | null
         }
         Insert: {
+          activo?: boolean
           archivo_path: string
           creado_en?: string
           expediente_id: string
           id?: string
           subido_por?: string | null
           tipo: Database["public"]["Enums"]["tipo_documento"]
+          vista_foto?: Database["public"]["Enums"]["vista_foto"] | null
         }
         Update: {
+          activo?: boolean
           archivo_path?: string
           creado_en?: string
           expediente_id?: string
           id?: string
           subido_por?: string | null
           tipo?: Database["public"]["Enums"]["tipo_documento"]
+          vista_foto?: Database["public"]["Enums"]["vista_foto"] | null
         }
         Relationships: [
           {
@@ -836,6 +842,7 @@ export type Database = {
         | "estudio_previo"
         | "foto_paciente"
       tipo_seccion: "antecedentes" | "socioeconomico"
+      vista_foto: "anterior" | "lateral_derecha" | "lateral_izquierda"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1009,6 +1016,7 @@ export const Constants = {
         "foto_paciente",
       ],
       tipo_seccion: ["antecedentes", "socioeconomico"],
+      vista_foto: ["anterior", "lateral_derecha", "lateral_izquierda"],
     },
   },
 } as const
@@ -1031,5 +1039,6 @@ export type ResultadoDictamen = EnumsPublicas["resultado_dictamen"];
 export type TipoSeccion = EnumsPublicas["tipo_seccion"];
 export type TipoConsentimiento = EnumsPublicas["tipo_consentimiento"];
 export type TipoDocumento = EnumsPublicas["tipo_documento"];
+export type VistaFoto = EnumsPublicas["vista_foto"];
 export type EstadoPreRegistro = EnumsPublicas["estado_pre_registro"];
 
