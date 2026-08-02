@@ -21,7 +21,7 @@ export async function Encabezado({ modulo }: { modulo: string }) {
   if (user) {
     const { data: perfil } = await supabase
       .from("usuario_perfil")
-      .select("nombre", "rol")
+      .select("nombre, rol")
       .eq("id", user.id)
       .maybeSingle();
     destino = perfil?.rol ? DESTINO_POR_ROL[perfil.rol] : "/";
