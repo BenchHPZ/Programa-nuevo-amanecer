@@ -17,19 +17,22 @@ export async function Encabezado({ modulo }: { modulo: string }) {
   } = await supabase.auth.getUser();
 
   let destino = "/";
+  let nombre: string | null = null;
   if (user) {
     const { data: perfil } = await supabase
       .from("usuario_perfil")
-      .select("rol")
+      .select("nombre", "rol")
       .eq("id", user.id)
       .maybeSingle();
     destino = perfil?.rol ? DESTINO_POR_ROL[perfil.rol] : "/";
+    nombre = perfil?.nombre ?? null;
   }
 
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b bg-background/95 px-4 py-2 backdrop-blur">
       <span className="text-sm font-semibold text-foreground">{modulo}</span>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
+        { nombre && <span className="text-sm text-muted-foreground">Adelante {nombre}</span> }    
         <Button variant="outline" size="sm" nativeButton={false} render={<Link href={destino} />}>
           Mi panel
         </Button>

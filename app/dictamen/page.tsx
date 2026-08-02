@@ -4,7 +4,7 @@ import { obtenerJornadaActiva } from "@/lib/jornada";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { EstadoExpediente, ResultadoDictamen } from "@/lib/supabase/tipos";
 
@@ -119,6 +119,11 @@ export default async function PaginaDictamen() {
             <p className="py-8 text-center text-muted-foreground">No hay expedientes pendientes.</p>
           )}
         </CardContent>
+        <CardFooter>
+          <Button size="lg" nativeButton={false} render={<Link href={'/captura'} />}>
+            Capturar nuevo expediente
+          </Button>
+        </CardFooter>
       </Card>
 
       {enCaptura.length > 0 && (
