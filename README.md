@@ -17,8 +17,8 @@ durante ~35-40 años.
 |---|---|
 | **Etapa en curso** | Etapa 1 — Primera revisión |
 | **Jornada objetivo** | Guanajuato · 3 al 7 de agosto de 2026 |
-| **Ventana de desarrollo** | 27 de julio – 2 de agosto de 2026 |
-| **Última actualización** | 3 de agosto de 2026 |
+| **Ventana de desarrollo** | 27 de julio – 6 de agosto de 2026 |
+| **Última actualización** | 6 de agosto de 2026 |
 
 ### Avance
 
@@ -111,6 +111,7 @@ Ver [`.env.example`](.env.example). La llave `SUPABASE_SERVICE_ROLE_KEY` es de s
 │   ├── colaborar/           registro público de colaboradores — 4 perfiles
 │   ├── auth/                registro, inicio de sesión, estados de acceso
 │   ├── admin/               solo administrativo
+│   │   ├── layout.tsx         header persistente: módulo, ir al panel, cerrar sesión
 │   │   ├── page.tsx           tablero con los conteos del día (RF-192)
 │   │   ├── expedientes/       padrón con filtros por estado/dictamen/servicio/fecha
 │   │   ├── exportar/          route handler: CSV con BOM, auditado en audit_log
@@ -118,16 +119,25 @@ Ver [`.env.example`](.env.example). La llave `SUPABASE_SERVICE_ROLE_KEY` es de s
 │   │   ├── colaboradores/     bandeja de quien se ofreció a apoyar
 │   │   └── usuarios/ jornadas/ catalogo/
 │   ├── captura/             listado, alta con dedupe, ficha con autoguardado
+│   │   ├── layout.tsx         header persistente (mismo componente que admin/dictamen)
 │   │   ├── nuevo/             asistente: buscar/crear paciente y responsable
 │   │   ├── pre-registros/     bandeja pública: validar y promover (RF-181)
-│   │   └── [expedienteId]/    secciones 1-4 + papelería
+│   │   └── [expedienteId]/    secciones 1-4 + papelería — médico tiene aquí las mismas
+│   │                          facultades que capturista (ver docs/MANUAL-ROLES.md §4)
 │   ├── dictamen/            listado del médico + dictamen (4 salidas) → folio + QR
+│   │   ├── layout.tsx         header persistente (mismo componente que admin/captura)
+│   │   └── [expedienteId]/    historia clínica, foto (3 vistas + eliminar) y dictamen
 │   └── imprimir/            folio (térmico/carta), constancia y 3 consentimientos
 │                              prellenados — window.print(), sin PDF en servidor
 ├── components/
 │   ├── ui/                   shadcn/ui (Base UI)
 │   ├── marca/                logotipo, con las reglas de uso del manual
-│   └── form-renderer/        motor genérico: catálogo JSON → formulario con autoguardado
+│   ├── layout/                header persistente: módulo actual, ir al panel según rol,
+│   │                          cerrar sesión (sin logo — docs/MANUAL-IMAGEN.md §6)
+│   ├── expediente/            foto del paciente: 3 vistas fijas, cámara/archivo según
+│   │                          dispositivo, vista ampliada y eliminar (borrado lógico)
+│   └── form-renderer/        motor genérico: catálogo JSON → formulario con autoguardado,
+│                              con subsecciones opcionales para agrupar campos con título
 ├── lib/
 │   ├── qr.ts                 QR del folio (SVG, sin canvas ni servicio externo)
 │   ├── storage.ts            URLs firmadas de corta duración para el bucket privado
@@ -137,6 +147,9 @@ Ver [`.env.example`](.env.example). La llave `SUPABASE_SERVICE_ROLE_KEY` es de s
 │   ├── importacion.ts        validación de filas, compartida por vista previa e importación
 │   ├── nombres.ts            separa "nombre completo" en nombre y apellidos (conjetura)
 │   ├── jornada.ts            jornada activa y próxima convocatoria pública
+│   ├── roles.ts               mapa rol → ruta del tablero, usado por el header y al iniciar sesión
+│   ├── permisos.ts            permisos de UI espejo de RLS: quién gestiona fotos, quién
+│   │                          edita cada sección del catálogo (antecedentes/socioeconómico)
 │   └── supabase/             clientes (browser/server/admin/middleware) + tipos generados
 ├── scripts/
 │   ├── respaldo.ps1          respaldo manual: esquema + datos, con verificación

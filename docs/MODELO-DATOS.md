@@ -1,7 +1,7 @@
 # Modelo de datos
 
 **Programa Nuevo Amanecer, A.C.**
-Versión 1.0 · 27 de julio de 2026
+Versión 1.1 · 6 de agosto de 2026
 
 ---
 
@@ -34,6 +34,12 @@ es lo que hace posible el caso "regresar en 6 meses" (RF-143).
 Esto es lo que permite que el catálogo llegue tarde o se modifique la noche anterior sin
 requerir un despliegue (RF-130, RF-131).
 
+`definicion` acepta dos formas: la plana original (`{ campos: [...] }`) y una agrupada
+(`{ subsecciones: [{ titulo, campos: [...] }] }`), usada para dividir Historia clínica en
+bloques con nombre (Motivo de consulta, Antecedentes heredofamiliares, etc.) sin perder
+retrocompatibilidad — ambas siguen guardando un único blob `datos JSONB` por sección en
+`expediente_seccion`, agrupar es solo cuestión de renderizado.
+
 ### 1.4 El dictamen es su propia tabla
 
 Aunque conceptualmente es la quinta sección de captura, `dictamen_etapa1` es una tabla aparte
@@ -59,7 +65,9 @@ registros de auditoría de la NOM-004 y arranca el reloj de madurez para SIRES (
 
 No hay `DELETE`. Las bajas marcan `activo = false` y quedan en el log con su valor anterior
 (RNF-02). Es exigencia de la NOM-004, que prohíbe borrar o enmendar: las correcciones deben
-preservar el original.
+preservar el original. `documento` adoptó el mismo patrón para poder "eliminar" una foto del
+paciente: la fila se marca `activo = false` (solo médico de triage o administrativo, vía RLS),
+nunca se borra de verdad.
 
 ---
 
@@ -144,9 +152,11 @@ consentimiento (
 
 documento (
   expediente_id,
-  tipo,                               -- acta | curp | ine_responsable
-                                      -- comprobante_domicilio | estudio_previo
-  archivo_path, subido_por
+  tipo,                               -- acta | curp | ine_responsable | comprobante_domicilio
+                                      -- estudio_previo | foto_paciente
+  vista_foto,                         -- anterior | lateral_derecha | lateral_izquierda
+                                      -- (solo aplica si tipo = foto_paciente; nullable)
+  archivo_path, subido_por, activo    -- activo: borrado lógico, "eliminar" una foto (§1.7)
 )
 ```
 
@@ -167,7 +177,8 @@ usuario_perfil (
 
 catalogo_campos (
   jornada_id, seccion,
-  definicion JSONB, version           -- versionado por jornada (RF-132)
+  definicion JSONB,                   -- { campos: [...] } o { subsecciones: [{ titulo, campos }] }
+  version                             -- versionado por jornada (RF-132)
 )
 
 audit_log (
@@ -238,7 +249,6 @@ integridad, autenticidad y disponibilidad (RNF-04). En la práctica:
 
 | Pendiente | Etapa |
 |---|---|
-| Catálogo real de antecedentes médicos y estudio socioeconómico | 1 · día 4 |
 | Catálogo de tipos de cirugía con duración estimada | 2 |
 | Tablas de quirófano, bloque horario y programación | 2 |
 | Tablas de encuesta y respuestas | 3 |
