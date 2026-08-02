@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import "./globals.css";
 
@@ -29,6 +29,18 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "Programa Nuevo Amanecer",
   description: "Sistema de gestión de jornadas — Programa Nuevo Amanecer, A.C.",
+};
+
+/**
+ * Sin esto, los navegadores móviles renderizan con un viewport de escritorio
+ * simulado (~980px) y luego escalan — todas las clases responsive de
+ * Tailwind (sm:/md:/lg:) evalúan contra ese ancho falso, no el real del
+ * teléfono. Es la causa de que, por ejemplo, el botón "Tomar foto" (sm:hidden)
+ * nunca apareciera en móvil real y "Elegir archivo" (hidden sm:flex) sí.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

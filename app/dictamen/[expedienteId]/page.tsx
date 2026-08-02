@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { generarQrSvg } from "@/lib/qr";
-import { puedeGestionarFotos } from "@/lib/permisos";
+import { puedeEditarSeccion, puedeGestionarFotos } from "@/lib/permisos";
 import { urlFirmadaPapeleria } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
@@ -65,8 +65,14 @@ export default async function PaginaDictamenExpediente({
 
   if (!expediente || !expediente.paciente) notFound();
 
-  const [{ data: vinculos }, { data: catalogos }, { data: seccionesGuardadas }, { data: fotos }, puedeEliminarFotos] =
-    await Promise.all([
+  const [
+    { data: vinculos },
+    { data: catalogos },
+    { data: seccionesGuardadas },
+    { data: fotos },
+    puedeEliminarFotos,
+    puedeAntecedentes,
+  ] = await Promise.all([
       supabase
         .from("paciente_responsable")
         .select("parentesco, es_principal, responsable:responsable_id(*)")
@@ -86,6 +92,7 @@ export default async function PaginaDictamenExpediente({
         .eq("activo", true)
         .order("creado_en", { ascending: false }),
       puedeGestionarFotos(supabase),
+      puedeEditarSeccion(supabase, "antecedentes"),
     ]);
 
   const jornada = Array.isArray(expediente.jornada) ? expediente.jornada[0] : expediente.jornada;
@@ -207,6 +214,7 @@ export default async function PaginaDictamenExpediente({
               seccion="antecedentes"
               definicion={definicionAntecedentes}
               datosIniciales={(seccionAntecedentes?.datos as unknown as DatosSeccion) ?? {}}
+              soloLectura={!puedeAntecedentes}
             />
           ) : (
             <p className="text-sm text-muted-foreground">

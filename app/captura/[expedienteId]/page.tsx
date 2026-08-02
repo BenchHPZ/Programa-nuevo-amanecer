@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { puedeGestionarFotos } from "@/lib/permisos";
+import { puedeEditarSeccion, puedeGestionarFotos } from "@/lib/permisos";
 import { urlFirmadaPapeleria } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
@@ -134,7 +134,14 @@ export default async function PaginaExpediente({
   const principal = vinculos?.[0];
   const jornada = Array.isArray(expediente.jornada) ? expediente.jornada[0] : expediente.jornada;
 
-  const [consentimientosConUrl, documentosConUrl, fotosConUrlYNulos, puedeEliminarFotos] = await Promise.all([
+  const [
+    consentimientosConUrl,
+    documentosConUrl,
+    fotosConUrlYNulos,
+    puedeEliminarFotos,
+    puedeAntecedentes,
+    puedeSocioeconomico,
+  ] = await Promise.all([
     Promise.all(
       (consentimientos ?? [])
         .filter((c) => c.tipo !== "consentimiento_informado")
@@ -160,6 +167,8 @@ export default async function PaginaExpediente({
       })),
     ),
     puedeGestionarFotos(supabase),
+    puedeEditarSeccion(supabase, "antecedentes"),
+    puedeEditarSeccion(supabase, "socioeconomico"),
   ]);
   const fotosPaciente: FotoInfo[] = fotosConUrlYNulos.filter(
     (f): f is FotoInfo => f.url !== null && f.vista !== null,
@@ -253,6 +262,7 @@ export default async function PaginaExpediente({
                 seccion={seccion}
                 definicion={definicion}
                 datosIniciales={(guardado?.datos as unknown as DatosSeccion) ?? {}}
+                soloLectura={!(seccion === "antecedentes" ? puedeAntecedentes : puedeSocioeconomico)}
               />
             </CardContent>
           </Card>

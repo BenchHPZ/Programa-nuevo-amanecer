@@ -16,11 +16,13 @@ export function FormularioSeccion({
   seccion,
   definicion,
   datosIniciales,
+  soloLectura = false,
 }: {
   expedienteId: string;
   seccion: "antecedentes" | "socioeconomico";
   definicion: DefinicionCatalogo;
   datosIniciales: DatosSeccion;
+  soloLectura?: boolean;
 }) {
   const [datos, setDatos] = useState<DatosSeccion>(datosIniciales);
   const [estadoGuardado, setEstadoGuardado] = useState<EstadoGuardado>("guardado");
@@ -37,6 +39,7 @@ export function FormularioSeccion({
   }, []);
 
   function actualizar(clave: string, valor: DatosSeccion[string]) {
+    if (soloLectura) return; // defensivo, aunque los inputs ya estén disabled
     const siguiente = { ...datos, [clave]: valor };
     setDatos(siguiente);
     setEstadoGuardado("pendiente");
@@ -62,18 +65,27 @@ export function FormularioSeccion({
           <div className="grid gap-4 sm:grid-cols-2">
             {grupo.campos.map((campo) => (
               <div key={campo.clave} className={campo.tipo === "texto_largo" ? "sm:col-span-2" : undefined}>
-                <Campo campo={campo} valor={datos[campo.clave]} onCambio={(v) => actualizar(campo.clave, v)} />
+                <Campo
+                  campo={campo}
+                  valor={datos[campo.clave]}
+                  onCambio={(v) => actualizar(campo.clave, v)}
+                  disabled={soloLectura}
+                />
               </div>
             ))}
           </div>
         </div>
       ))}
-      <div className="flex items-center justify-between">
-        <IndicadorGuardado estado={estadoGuardado} error={errorGuardado} />
-        <Badge variant={completa ? "default" : "secondary"}>
-          {completa ? "Sección completa" : "Faltan campos obligatorios"}
-        </Badge>
-      </div>
+      {soloLectura ? (
+        <p className="text-xs text-muted-foreground">Solo lectura — tu rol no puede editar esta sección.</p>
+      ) : (
+        <div className="flex items-center justify-between">
+          <IndicadorGuardado estado={estadoGuardado} error={errorGuardado} />
+          <Badge variant={completa ? "default" : "secondary"}>
+            {completa ? "Sección completa" : "Faltan campos obligatorios"}
+          </Badge>
+        </div>
+      )}
     </div>
   );
 }

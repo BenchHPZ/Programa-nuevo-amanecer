@@ -68,6 +68,10 @@ export function seccionCompleta(campos: CampoCatalogo[], datos: DatosSeccion): b
   return campos
     .filter((c) => c.requerido)
     .every((c) => {
+      // Un booleano no puede estar "vacío" de forma distinguible en la UI:
+      // false es una respuesta válida, igual de "apagado" que un campo sin
+      // tocar. Por eso un booleano requerido nunca cuenta como faltante.
+      if (c.tipo === "booleano") return true;
       const v = datos[c.clave];
       if (v === null || v === undefined) return false;
       if (typeof v === "string") return v.trim().length > 0;

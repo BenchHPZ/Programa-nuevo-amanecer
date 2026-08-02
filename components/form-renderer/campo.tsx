@@ -19,10 +19,11 @@ interface Props {
   campo: CampoCatalogo;
   valor: ValorCampo;
   onCambio: (valor: ValorCampo) => void;
+  disabled?: boolean;
 }
 
 /** Un campo del catálogo, renderizado según su `tipo`. */
-export function Campo({ campo, valor, onCambio }: Props) {
+export function Campo({ campo, valor, onCambio, disabled }: Props) {
   const id = `campo-${campo.clave}`;
 
   return (
@@ -35,11 +36,22 @@ export function Campo({ campo, valor, onCambio }: Props) {
       )}
 
       {campo.tipo === "texto" && (
-        <Input id={id} value={(valor as string) ?? ""} onChange={(e) => onCambio(e.target.value)} />
+        <Input
+          id={id}
+          value={(valor as string) ?? ""}
+          onChange={(e) => onCambio(e.target.value)}
+          disabled={disabled}
+        />
       )}
 
       {campo.tipo === "texto_largo" && (
-        <Textarea id={id} value={(valor as string) ?? ""} onChange={(e) => onCambio(e.target.value)} rows={3} />
+        <Textarea
+          id={id}
+          value={(valor as string) ?? ""}
+          onChange={(e) => onCambio(e.target.value)}
+          rows={3}
+          disabled={disabled}
+        />
       )}
 
       {campo.tipo === "numero" && (
@@ -48,16 +60,23 @@ export function Campo({ campo, valor, onCambio }: Props) {
           type="number"
           value={valor === null || valor === undefined ? "" : String(valor)}
           onChange={(e) => onCambio(e.target.value === "" ? null : Number(e.target.value))}
+          disabled={disabled}
         />
       )}
 
       {campo.tipo === "fecha" && (
-        <Input id={id} type="date" value={(valor as string) ?? ""} onChange={(e) => onCambio(e.target.value)} />
+        <Input
+          id={id}
+          type="date"
+          value={(valor as string) ?? ""}
+          onChange={(e) => onCambio(e.target.value)}
+          disabled={disabled}
+        />
       )}
 
       {campo.tipo === "booleano" && (
         <div className="flex items-center gap-2 py-1">
-          <Switch id={id} checked={Boolean(valor)} onCheckedChange={(v) => onCambio(v)} />
+          <Switch id={id} checked={Boolean(valor)} onCheckedChange={(v) => onCambio(v)} disabled={disabled} />
           <Label htmlFor={id} className="cursor-pointer">
             {campo.etiqueta}
             {campo.requerido ? <span className="text-destructive"> *</span> : null}
@@ -66,7 +85,7 @@ export function Campo({ campo, valor, onCambio }: Props) {
       )}
 
       {campo.tipo === "seleccion" && (
-        <Select value={(valor as string) ?? ""} onValueChange={(v) => v && onCambio(v)}>
+        <Select value={(valor as string) ?? ""} onValueChange={(v) => v && onCambio(v)} disabled={disabled}>
           <SelectTrigger id={id}>
             <SelectValue placeholder="Elegir…" />
           </SelectTrigger>
@@ -94,6 +113,7 @@ export function Campo({ campo, valor, onCambio }: Props) {
                     const siguiente = v ? [...actuales, op] : actuales.filter((x) => x !== op);
                     onCambio(siguiente);
                   }}
+                  disabled={disabled}
                 />
                 <Label htmlFor={`${id}-${op}`} className="cursor-pointer font-normal">
                   {op}
