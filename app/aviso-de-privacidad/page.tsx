@@ -1,13 +1,14 @@
 import Link from "next/link";
 
+import { CONTACTO } from "@/config/contenido-landing";
 import { Button } from "@/components/ui/button";
 
 /**
  * Aviso de privacidad integral (RF-171), público y sin sesión — la
- * LFPDPPP lo exige. Borrador redactado por el equipo técnico contra la ley
- * vigente desde el 21 de marzo de 2025; pendiente de revisión por el
- * asesor jurídico de la asociación (docs/CUMPLIMIENTO.md §4). Los datos
- * entre corchetes los debe completar la asociación antes de publicar.
+ * LFPDPPP lo exige. Redactado contra la ley vigente desde el 21 de marzo de
+ * 2025 (ver docs/CUMPLIMIENTO.md). El domicilio y el canal de contacto ARCO
+ * se jalan de `CONTACTO` en config/contenido-landing.ts — un cambio ahí
+ * actualiza este aviso y las plantillas de consentimiento por igual.
  */
 export default function PaginaAvisoPrivacidad() {
   return (
@@ -19,19 +20,14 @@ export default function PaginaAvisoPrivacidad() {
         </Button>
       </div>
 
-      <p className="border border-dashed border-amber-600 bg-amber-50 p-3 text-sm font-medium text-amber-800">
-        Borrador — pendiente de revisión por el asesor jurídico de la asociación. No sustituye el
-        aviso de privacidad definitivo que se publicará una vez validado.
-      </p>
-
       <div className="space-y-4 text-sm leading-relaxed">
         <section className="space-y-1">
           <h2 className="font-semibold">1. Responsable del tratamiento</h2>
           <p>
-            <strong>Programa Nuevo Amanecer, A.C.</strong>, con domicilio en [domicilio de la
-            asociación — completar], es responsable del tratamiento de sus datos personales,
-            conforme a la Ley Federal de Protección de Datos Personales en Posesión de los
-            Particulares (LFPDPPP), vigente desde el 21 de marzo de 2025.
+            <strong>Programa Nuevo Amanecer, A.C.</strong>, con domicilio en {CONTACTO.domicilio},
+            es responsable del tratamiento de sus datos personales, conforme a la Ley Federal de
+            Protección de Datos Personales en Posesión de los Particulares (LFPDPPP), vigente
+            desde el 21 de marzo de 2025.
           </p>
         </section>
 
@@ -59,7 +55,14 @@ export default function PaginaAvisoPrivacidad() {
           </p>
           <p>
             <strong>Finalidades secundarias</strong> (puede oponerse sin afectar el servicio):
-            fines estadísticos internos e informes anuales del programa.
+            generar <strong>estadísticas generales y agregadas</strong> del programa —por ejemplo,
+            número de pacientes atendidos, procedimientos realizados o resultados por tipo de
+            intervención, sin identificar a ninguna persona— para informes anuales, materiales de
+            difusión, publicidad de la asociación y una eventual publicación de resultados del
+            programa. <strong>Ningún dato personal específico</strong> —nombre, fotografía, caso
+            individual— se usa con fines de difusión, publicidad o recaudación sin una
+            autorización aparte, expresa y revocable, como la que ya se pide en la Autorización de
+            Uso de Imagen.
           </p>
         </section>
 
@@ -105,9 +108,9 @@ export default function PaginaAvisoPrivacidad() {
           <h2 className="font-semibold">7. Derechos ARCO y su ejercicio</h2>
           <p>
             Usted puede ejercer sus derechos de <strong>Acceso, Rectificación, Cancelación y
-            Oposición</strong> (ARCO), así como revocar su consentimiento, escribiendo a
-            [correo o teléfono de contacto — completar]. Responderemos en los plazos que marca la
-            ley.
+            Oposición</strong> (ARCO), así como revocar su consentimiento, escribiendo a{" "}
+            <strong>{CONTACTO.correo}</strong> o llamando al <strong>{CONTACTO.telefono}</strong>.
+            Responderemos en los plazos que marca la ley.
           </p>
         </section>
 
@@ -119,7 +122,7 @@ export default function PaginaAvisoPrivacidad() {
           </p>
         </section>
 
-        <p className="text-xs text-muted-foreground">Última actualización: 2 de agosto de 2026.</p>
+        <p className="text-xs text-muted-foreground">Última actualización: 6 de agosto de 2026.</p>
       </div>
     </div>
   );

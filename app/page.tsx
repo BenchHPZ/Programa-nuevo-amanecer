@@ -12,7 +12,6 @@ import {
   PREGUNTAS_FRECUENTES,
   SALON_DE_LA_FAMA,
   SERVICIOS,
-  faltaConfirmar,
   type CategoriaAliado,
 } from "@/config/contenido-landing";
 import {
@@ -271,12 +270,6 @@ export default async function Inicio() {
               {CONTACTO.domicilio}
             </p>
           </div>
-          {faltaConfirmar(CONTACTO.correo) && (
-            <p className="rounded-md border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900">
-              Los datos de contacto están pendientes de confirmar con la asociación. Esta página
-              no debe publicarse hasta completarlos.
-            </p>
-          )}
         </div>
       </section>
 

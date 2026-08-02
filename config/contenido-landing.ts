@@ -1,11 +1,13 @@
 /**
  * Contenido institucional de la landing pública.
  *
- * Todo vive aquí y no incrustado en el JSX por una razón práctica: los datos
- * de contacto están **sin confirmar**, y los nombres de donantes y aliados
- * normalmente requieren convenio o permiso expreso de cada organización.
- * Tenerlos en un solo archivo permite corregirlos —o quitarlos— en un renglón,
- * sin tocar componentes.
+ * Todo vive aquí y no incrustado en el JSX por una razón práctica: `CONTACTO`
+ * es la fuente única para el sitio y para los documentos legales (aviso de
+ * privacidad, plantillas de consentimiento), y los nombres de donantes y
+ * aliados normalmente requieren convenio o permiso expreso de cada
+ * organización. Tenerlos en un solo archivo permite corregirlos —o
+ * quitarlos— en un renglón, sin tocar componentes ni documentos legales por
+ * separado.
  *
  * Los hechos vienen de docs/HISTORIA.md. **No se publica** el apartado de
  * retos de ese documento (opacidad financiera, sucesión del liderazgo, falta
@@ -16,9 +18,6 @@
  * «Niña o niño con labio y/o paladar hendido», nunca «malformación» ni
  * «beneficiario». Se nombra que es gratuito sin pedir gratitud.
  */
-
-/** Marcador visible para lo que falta confirmar con la asociación. */
-export const POR_CONFIRMAR = "[por confirmar]";
 
 export const ORGANIZACION = {
   nombreLegal: "Programa Nuevo Amanecer, A.C.",
@@ -349,23 +348,18 @@ export const HITOS = [
 ];
 
 /**
- * Datos de contacto — **pendientes de confirmar con la asociación**.
- *
- * Se dejan como marcadores visibles a propósito. Publicar un correo o un
- * teléfono equivocado en la única página donde una familia va a buscar cómo
- * comunicarse es peor que no publicar ninguno, y un marcador se nota; un dato
- * incorrecto, no.
+ * Datos de contacto reales de la asociación — fuente única para el sitio y
+ * para los documentos legales (aviso de privacidad, plantillas de
+ * consentimiento): `correo`/`telefono` son también el canal de contacto
+ * para ejercer derechos ARCO. Cambiar un dato aquí lo actualiza en todos
+ * lados a la vez.
  *
  * El teléfono de la Clínica ISSSTE que aparece en docs/HISTORIA.md es de la
  * SEDE, no de la asociación: no se usa aquí.
  */
 export const CONTACTO = {
-  correo: POR_CONFIRMAR,
-  telefono: POR_CONFIRMAR,
-  domicilio: POR_CONFIRMAR,
-  horario: POR_CONFIRMAR,
+  correo: "contacto@nuevoamanecergto.org",
+  telefono: "(+52) 4735971365",
+  domicilio: "Guanajuato, Guanajuato",
+  horario: "Atención en horario de oficina - Paciencia con nuestros voluntarios",
 };
-
-export function faltaConfirmar(valor: string): boolean {
-  return valor === POR_CONFIRMAR;
-}

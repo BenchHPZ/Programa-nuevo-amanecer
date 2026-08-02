@@ -1,3 +1,5 @@
+import { CONTACTO } from "@/config/contenido-landing";
+
 interface Datos {
   nombrePaciente: string;
   nombreResponsable: string;
@@ -8,25 +10,26 @@ interface Datos {
 }
 
 /**
- * Borrador redactado por el equipo técnico contra la LFPDPPP vigente desde
- * el 21 de marzo de 2025 y la NOM-004. NO es asesoría legal — pendiente de
- * revisión por el asesor jurídico de la asociación antes de usarse en
- * operación real (docs/CUMPLIMIENTO.md §4). Los datos entre corchetes los
- * debe completar la asociación.
+ * Redactado contra la LFPDPPP vigente desde el 21 de marzo de 2025 y la
+ * NOM-004 (ver docs/CUMPLIMIENTO.md). El domicilio y el canal ARCO se jalan
+ * de `CONTACTO` en config/contenido-landing.ts — mismo dato que usa el
+ * aviso de privacidad integral (app/aviso-de-privacidad).
  */
 export function AvisoPrivacidad({ nombrePaciente, nombreResponsable, parentesco, fecha }: Datos) {
   return (
     <div className="space-y-3 text-sm leading-relaxed">
       <h2 className="text-center text-lg font-semibold">Aviso de Privacidad Simplificado</h2>
       <p>
-        <strong>Programa Nuevo Amanecer, A.C.</strong>, con domicilio en [domicilio de la
-        asociación — completar], es responsable del tratamiento de los datos personales que usted
-        nos proporciona con motivo de la jornada médica.
+        <strong>Programa Nuevo Amanecer, A.C.</strong>, con domicilio en {CONTACTO.domicilio}, es
+        responsable del tratamiento de los datos personales que usted nos proporciona con motivo
+        de la jornada médica.
       </p>
       <p>
         <strong>Finalidad.</strong> Evaluar la elegibilidad del paciente para los servicios
         gratuitos de cirugía o tratamiento láser de labio y/o paladar hendido; contactarlo;
-        integrar el expediente de la jornada; y fines estadísticos internos del programa.
+        integrar el expediente de la jornada; y generar estadísticas generales del programa para
+        informes, difusión y publicidad — nunca datos personales específicos sin una autorización
+        aparte, como la del uso de imagen.
       </p>
       <p>
         <strong>Datos sensibles.</strong> Se recaban datos de salud del paciente, que la ley
@@ -39,13 +42,13 @@ export function AvisoPrivacidad({ nombrePaciente, nombreResponsable, parentesco,
       </p>
       <p>
         <strong>Derechos ARCO.</strong> Usted puede ejercer sus derechos de acceso, rectificación,
-        cancelación y oposición escribiendo a [correo o teléfono de contacto — completar].
+        cancelación y oposición escribiendo a {CONTACTO.correo} o al teléfono {CONTACTO.telefono}.
       </p>
       <p>
         El aviso de privacidad integral, con el detalle exigido por la Ley Federal de Protección
         de Datos Personales en Posesión de los Particulares, está disponible sin necesidad de
-        sesión en [dirección de la landing — completar] y de forma impresa en el módulo de
-        atención.
+        sesión en la página de inicio del sistema, en el enlace «Aviso de privacidad», y de forma
+        impresa en el módulo de atención.
       </p>
       <p className="pt-2">
         Al firmar, quien suscribe como adulto responsable declara haber leído este aviso y otorga
@@ -131,9 +134,9 @@ export function UsoImagen({ nombrePaciente, nombreResponsable, parentesco, fecha
         absoluto la evaluación ni el acceso a los servicios del programa.
       </p>
       <p>
-        La autorización es válida hasta que el firmante la revoque por escrito en [correo o
-        teléfono de contacto — completar]. Las imágenes no se compartirán para fines distintos a
-        los aquí señalados.
+        La autorización es válida hasta que el firmante la revoque por escrito en{" "}
+        {CONTACTO.correo} o al teléfono {CONTACTO.telefono}. Las imágenes no se compartirán para
+        fines distintos a los aquí señalados.
       </p>
 
       <div className="flex gap-8 pt-2 text-sm">

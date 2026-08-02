@@ -7,9 +7,9 @@ import { BotonImprimir } from "../../../boton-imprimir";
 import { AvisoPrivacidad, Deslinde, UsoImagen } from "../../contenido";
 
 const PLANTILLAS = {
-  aviso_privacidad: { titulo: "Aviso de privacidad", Componente: AvisoPrivacidad },
-  deslinde: { titulo: "Deslinde de responsabilidad", Componente: Deslinde },
-  uso_imagen: { titulo: "Uso de imagen", Componente: UsoImagen },
+  aviso_privacidad: { Componente: AvisoPrivacidad },
+  deslinde: { Componente: Deslinde },
+  uso_imagen: { Componente: UsoImagen },
 } as const;
 
 type TipoValido = keyof typeof PLANTILLAS;
@@ -60,22 +60,16 @@ export default async function PaginaImprimirConsentimiento({
     : "—";
   const nombrePaciente = `${fila.paciente.nombre} ${fila.paciente.apellido_paterno} ${fila.paciente.apellido_materno ?? ""}`.trim();
 
-  const { Componente, titulo } = PLANTILLAS[tipo];
+  const { Componente } = PLANTILLAS[tipo];
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-6">
-      <div className="flex items-center justify-between print:hidden">
-        <p className="text-sm font-medium text-amber-700">
-          Borrador — pendiente de revisión legal. No usar en operación real (docs/CUMPLIMIENTO.md).
-        </p>
+      <div className="flex items-center justify-end print:hidden">
         <BotonImprimir />
       </div>
 
       <style>{`@page { size: letter; margin: 1in; }`}</style>
       <div className="space-y-4 border p-8 print:border-0">
-        <p className="border border-dashed border-amber-600 bg-amber-50 p-2 text-center text-xs font-medium text-amber-800">
-          BORRADOR — PENDIENTE DE REVISIÓN LEGAL — {titulo}
-        </p>
         {/*
           Encabezado con logo y nombre legal completo (§6). Monocromo negro:
           es un documento que se firma de forma autógrafa, se fotocopia y se
