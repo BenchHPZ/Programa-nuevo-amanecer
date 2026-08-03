@@ -115,6 +115,7 @@ export const ALIADOS_INSTITUCIONALES: {
     nombre: "Clínica Hospital ISSSTE Guanajuato",
     aporte: "Sede desde 1984 y durante cuarenta años: quirófanos, instalaciones y personal",
     categoria: "sede",
+    logo: "/aliados/Logo_del_ISSSTE.svg",
   },
   {
     nombre: "Hospital General de Guanajuato",
@@ -125,21 +126,25 @@ export const ALIADOS_INSTITUCIONALES: {
     nombre: "Fundación Hospitales MAC",
     aporte: "Sede ocasional de las jornadas extras: quirófanos, material quirúrgico, hospitalización, personal enfermería",
     categoria: "sede",
+    logo: "/aliados/hospitales_mac_logo_fundacion_mac.svg",
   },
   {
     nombre: "Clínica Médica Guanajauto",
     aporte: "Sede principal de actuación, concebida como espacio polivalente de actividades rutinarias y especializadas",
     categoria: "sede",
+    logo: "/aliados/logo-clinica_medica_gto.png",
   },
   {
     nombre: "Secretaría de Salud de Guanajuato",
     aporte: "Coordinación estatal, difusión y organización de las jornadas",
     categoria: "institucional",
+    logo: "/aliados/logo-secretaria_de_salud.png",
   },
   {
     nombre: "DIF Municipal Guanajuato",
     aporte: "Acompañamiento psicosocial y terapia de lenguaje para las familias",
     categoria: "institucional",
+    logo: "logo-dfi_municipal_guanajuato.png",
   },
   {
     nombre: "Patronato del albergue Hospital General de Guanajuato",
@@ -150,6 +155,7 @@ export const ALIADOS_INSTITUCIONALES: {
     nombre: "Asoceación Mexicana de Diabetes Santa Fe de Guanajuato",
     aporte: "Apoyo incondicional en salúd preventiva y detección temprana, además de atención a familias",
     categoria: "institucional",
+    logo: "logo-asoceacion_mexicana_diabetes.png",
   },
   {
     nombre: "Instituto de Cirugía Plástica, Hospital Ángeles CDMX",
@@ -180,6 +186,7 @@ export const ALIADOS_INSTITUCIONALES: {
     nombre: "División de Ciencias Naturales y Exactas - Universidad de Guanajuato",
     aporte: "Servicio social de estudiantes de enfermería",
     categoria: "academico",
+    logo: "/aliados/escudo-universidad_de_guanajuato.png",
   },
   {
     nombre: "Cardinal Health",
@@ -188,6 +195,7 @@ export const ALIADOS_INSTITUCIONALES: {
   {
     nombre: "Medtronic",
     categoria: "donante",
+    logo: "/aliados/Logo-Medtronic.png"
   },
   {
     nombre: "Fundación Liomont",
