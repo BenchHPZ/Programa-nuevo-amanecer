@@ -144,7 +144,7 @@ export const ALIADOS_INSTITUCIONALES: {
     nombre: "DIF Municipal Guanajuato",
     aporte: "Acompañamiento psicosocial y terapia de lenguaje para las familias",
     categoria: "institucional",
-    logo: "logo-dfi_municipal_guanajuato.png",
+    logo: "/aliados/logo-dfi_municipal_guanajuato.png",
   },
   {
     nombre: "Patronato del albergue Hospital General de Guanajuato",
@@ -155,7 +155,7 @@ export const ALIADOS_INSTITUCIONALES: {
     nombre: "Asoceación Mexicana de Diabetes Santa Fe de Guanajuato",
     aporte: "Apoyo incondicional en salúd preventiva y detección temprana, además de atención a familias",
     categoria: "institucional",
-    logo: "logo-asoceacion_mexicana_diabetes.png",
+    logo: "/aliados/logo-asoceacion_mexicana_diabetes.png",
   },
   {
     nombre: "Instituto de Cirugía Plástica, Hospital Ángeles CDMX",
