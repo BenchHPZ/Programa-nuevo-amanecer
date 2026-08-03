@@ -136,11 +136,12 @@ export default async function PaginaDictamenExpediente({
       {expediente.estado === "borrador" && (
         <Card>
           <CardHeader>
-            <CardTitle>Expediente incompleto</CardTitle>
+            <CardTitle>Captura en progreso</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Todavía faltan secciones por capturar. No está listo para dictamen.
+              Historia clínica o Datos socioeconómicos todavía no están completos. Puedes
+              registrar el dictamen de todas formas.
             </p>
           </CardContent>
         </Card>
@@ -259,9 +260,9 @@ export default async function PaginaDictamenExpediente({
             )}
           </CardContent>
         </Card>
-      ) : expediente.estado === "completo" ? (
+      ) : (
         <FormularioDictamen expedienteId={expediente.id} />
-      ) : null}
+      )}
 
       {folioActivo && qrSvg && (
         <Card>

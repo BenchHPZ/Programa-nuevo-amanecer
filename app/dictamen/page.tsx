@@ -17,6 +17,12 @@ const ETIQUETA_RESULTADO: Record<ResultadoDictamen, { texto: string; variante: "
   regresar_6_meses: { texto: "Regresar en 6 meses", variante: "secondary" },
 };
 
+/** El dictamen ya no espera a que termine la captura — esta etiqueta solo informa. */
+const ETIQUETA_CAPTURA: Record<"completo" | "borrador", { texto: string; variante: "default" | "secondary" }> = {
+  completo: { texto: "Captura completa", variante: "default" },
+  borrador: { texto: "En captura", variante: "secondary" },
+};
+
 interface Persona {
   nombre: string;
   apellido_paterno: string;
@@ -69,11 +75,10 @@ export default async function PaginaDictamen() {
 
   const expedientes = filas as unknown as FilaExpediente[] | null;
 
-  const pendientes = (expedientes ?? []).filter((e) => e.estado === "completo");
+  const porDictaminar = (expedientes ?? []).filter((e) => e.estado !== "dictaminado");
   const dictaminados = (expedientes ?? []).filter((e) => e.estado === "dictaminado");
-  const enCaptura = (expedientes ?? []).filter((e) => e.estado === "borrador");
 
-  function nombrePersona(exp: (typeof pendientes)[number]) {
+  function nombrePersona(exp: (typeof porDictaminar)[number]) {
     const p = Array.isArray(exp.persona) ? exp.persona[0] : exp.persona;
     return p ? `${p.nombre} ${p.apellido_paterno} ${p.apellido_materno ?? ""}` : "—";
   }
@@ -87,22 +92,28 @@ export default async function PaginaDictamen() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Pendientes de dictamen ({pendientes.length})</CardTitle>
-          <CardDescription>Expedientes con captura completa, listos para revisión.</CardDescription>
+          <CardTitle>Por dictaminar ({porDictaminar.length})</CardTitle>
+          <CardDescription>Expedientes sin dictamen, con o sin captura terminada.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Paciente</TableHead>
+                <TableHead>Captura</TableHead>
                 <TableHead>Capturado</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pendientes.map((exp) => (
+              {porDictaminar.map((exp) => (
                 <TableRow key={exp.id}>
                   <TableCell className="font-medium">{nombrePersona(exp)}</TableCell>
+                  <TableCell>
+                    <Badge variant={ETIQUETA_CAPTURA[exp.estado === "completo" ? "completo" : "borrador"].variante}>
+                      {ETIQUETA_CAPTURA[exp.estado === "completo" ? "completo" : "borrador"].texto}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {new Date(exp.creado_en).toLocaleDateString("es-MX")}
                   </TableCell>
@@ -115,8 +126,8 @@ export default async function PaginaDictamen() {
               ))}
             </TableBody>
           </Table>
-          {pendientes.length === 0 && (
-            <p className="py-8 text-center text-muted-foreground">No hay expedientes pendientes.</p>
+          {porDictaminar.length === 0 && (
+            <p className="py-8 text-center text-muted-foreground">No hay expedientes por dictaminar.</p>
           )}
         </CardContent>
         <CardFooter>
@@ -125,12 +136,6 @@ export default async function PaginaDictamen() {
           </Button>
         </CardFooter>
       </Card>
-
-      {enCaptura.length > 0 && (
-        <p className="text-sm text-muted-foreground">
-          {enCaptura.length} expediente(s) todavía en captura, no listos para dictamen.
-        </p>
-      )}
 
       <Card>
         <CardHeader>
