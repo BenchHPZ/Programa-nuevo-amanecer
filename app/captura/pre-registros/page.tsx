@@ -39,8 +39,8 @@ export default async function PaginaPreRegistros() {
             Solicitudes recibidas por la página pública, en orden de llegada.
           </p>
         </div>
-        <Button variant="outline" nativeButton={false} render={<Link href="/captura" />}>
-          Volver al listado
+        <Button variant="outline" nativeButton={false} render={<Link href="/pacientes" />}>
+          Volver a pacientes
         </Button>
       </div>
 

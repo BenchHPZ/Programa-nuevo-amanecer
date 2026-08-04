@@ -105,6 +105,41 @@ export type Database = {
           },
         ]
       }
+      catalogo_dictamen: {
+        Row: {
+          creado_en: string
+          definicion: Json
+          id: string
+          jornada_id: string
+          version: number
+          vigente: boolean
+        }
+        Insert: {
+          creado_en?: string
+          definicion: Json
+          id?: string
+          jornada_id: string
+          version?: number
+          vigente?: boolean
+        }
+        Update: {
+          creado_en?: string
+          definicion?: Json
+          id?: string
+          jornada_id?: string
+          version?: number
+          vigente?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogo_dictamen_jornada_id_fkey"
+            columns: ["jornada_id"]
+            isOneToOne: false
+            referencedRelation: "jornada"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consentimiento: {
         Row: {
           archivo_path: string
@@ -343,6 +378,7 @@ export type Database = {
           folio_texto: string
           id: string
           jornada_id: string
+          sede: string
           servicio: Database["public"]["Enums"]["servicio_tipo"]
         }
         Insert: {
@@ -354,6 +390,7 @@ export type Database = {
           folio_texto: string
           id?: string
           jornada_id: string
+          sede?: string
           servicio: Database["public"]["Enums"]["servicio_tipo"]
         }
         Update: {
@@ -365,6 +402,7 @@ export type Database = {
           folio_texto?: string
           id?: string
           jornada_id?: string
+          sede?: string
           servicio?: Database["public"]["Enums"]["servicio_tipo"]
         }
         Relationships: [
@@ -387,16 +425,19 @@ export type Database = {
       folio_contador: {
         Row: {
           jornada_id: string
+          sede: string
           servicio: Database["public"]["Enums"]["servicio_tipo"]
           ultimo: number
         }
         Insert: {
           jornada_id: string
+          sede?: string
           servicio: Database["public"]["Enums"]["servicio_tipo"]
           ultimo?: number
         }
         Update: {
           jornada_id?: string
+          sede?: string
           servicio?: Database["public"]["Enums"]["servicio_tipo"]
           ultimo?: number
         }
@@ -674,6 +715,8 @@ export type Database = {
           apto_cirugia: number | null
           apto_laser: number | null
           borradores: number | null
+          cirugia_guanajuato: number | null
+          cirugia_leon: number | null
           completos: number | null
           dictaminados: number | null
           dictaminados_hoy: number | null
@@ -814,6 +857,8 @@ export type Database = {
         | "apto_laser"
         | "no_apto"
         | "regresar_6_meses"
+        | "cirugia_guanajuato"
+        | "cirugia_leon"
       rol_usuario:
         | "capturista"
         | "informista"
@@ -983,6 +1028,8 @@ export const Constants = {
         "apto_laser",
         "no_apto",
         "regresar_6_meses",
+        "cirugia_guanajuato",
+        "cirugia_leon",
       ],
       rol_usuario: [
         "capturista",

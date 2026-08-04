@@ -2,6 +2,29 @@ import { crearClienteServidor } from "@/lib/supabase/server";
 import type { RolUsuario } from "@/lib/supabase/tipos";
 
 /**
+ * El rol de quien tiene la sesión activa, o `null` sin sesión o sin perfil
+ * aprobado. Centraliza la misma consulta que antes se repetía suelta en
+ * cada página (`/pacientes` la necesita para decidir qué botones mostrar
+ * por fila: Captura, Dictaminar, Vista).
+ */
+export async function rolActual(
+  supabase: Awaited<ReturnType<typeof crearClienteServidor>>,
+): Promise<RolUsuario | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: perfil } = await supabase
+    .from("usuario_perfil")
+    .select("rol")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  return perfil?.rol ?? null;
+}
+
+/**
  * "Médico" y "admin" del requerimiento de negocio son, en el sistema de
  * roles real, medico_triage y administrativo — no existe un rol literal
  * "medico"/"admin" en rol_usuario. Es un chequeo de UI (mostrar u ocultar

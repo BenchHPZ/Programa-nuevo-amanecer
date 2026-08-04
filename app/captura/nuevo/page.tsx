@@ -87,8 +87,8 @@ export default async function PaginaNuevoExpediente({
           <h1 className="text-2xl font-semibold">Nuevo expediente</h1>
           <p className="text-muted-foreground">{jornada.nombre}</p>
         </div>
-        <Button variant="outline" nativeButton={false} render={<Link href="/captura" />}>
-          Volver al listado
+        <Button variant="outline" nativeButton={false} render={<Link href="/pacientes" />}>
+          Volver a pacientes
         </Button>
       </div>
 

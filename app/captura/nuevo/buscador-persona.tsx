@@ -90,6 +90,8 @@ const ETIQUETA_DICTAMEN: Record<string, string> = {
   apto_laser: "apto para láser",
   no_apto: "no apto",
   regresar_6_meses: "regresar en 6 meses",
+  cirugia_guanajuato: "apto — cirugía Guanajuato",
+  cirugia_leon: "apto — cirugía León",
 };
 
 /**

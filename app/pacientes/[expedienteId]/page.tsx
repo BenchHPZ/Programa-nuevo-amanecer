@@ -3,30 +3,31 @@ import { notFound } from "next/navigation";
 
 import { generarQrSvg } from "@/lib/qr";
 import { etiquetaResultado, obtenerOpcionesDictamen } from "@/lib/dictamen";
-import { puedeGestionarFotos } from "@/lib/permisos";
 import { urlFirmadaPapeleria } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FormularioSeccion } from "@/components/form-renderer/formulario-seccion";
-import type { DatosSeccion, DefinicionCatalogo } from "@/components/form-renderer/tipos";
+import { type DatosSeccion, type DefinicionCatalogo, todosLosCampos, seccionCompleta } from "@/components/form-renderer/tipos";
 import { FotoPaciente, type FotoInfo } from "@/components/expediente/foto-paciente";
 import type { EstadoExpediente, Tables } from "@/lib/supabase/tipos";
-
-import { FormularioDictamen } from "./formulario-dictamen";
 
 const TITULO_SECCION = {
   antecedentes: "Historia clínica",
   socioeconomico: "Datos socioeconómicos",
 } as const;
 
+const ETIQUETA_ESTADO: Record<EstadoExpediente, string> = {
+  borrador: "Borrador",
+  completo: "Completo",
+  dictaminado: "Dictaminado",
+};
+
 /**
- * El select combina cuatro relaciones embebidas a la vez; postgrest-js deja
+ * El select combina varias relaciones embebidas a la vez; postgrest-js deja
  * de inferir el tipo de la fila en ese caso y cae en `any` sin avisar en el
- * propio `.select()`. Se tipa explícito aquí, igual que ya se hace con las
- * columnas JSONB en otras páginas.
+ * propio `.select()`. Se tipa explícito, igual que en captura/dictamen.
  */
 interface FilaExpediente {
   id: string;
@@ -39,7 +40,13 @@ interface FilaExpediente {
   folio: Tables<"folio"> | Tables<"folio">[] | null;
 }
 
-export default async function PaginaDictamenExpediente({
+/**
+ * `/pacientes/[id]` — vista de solo consulta, accesible a los cuatro roles.
+ * Ningún control editable: ni datos personales, ni las secciones del
+ * catálogo, ni carga/borrado de fotos. Comunica estado de captura, folio y
+ * QR con su impresión.
+ */
+export default async function PaginaVistaPaciente({
   params,
 }: {
   params: Promise<{ expedienteId: string }>;
@@ -60,14 +67,8 @@ export default async function PaginaDictamenExpediente({
 
   if (!expediente || !expediente.paciente) notFound();
 
-  const [
-    { data: vinculos },
-    { data: catalogos },
-    { data: seccionesGuardadas },
-    { data: fotos },
-    puedeEliminarFotos,
-    opciones,
-  ] = await Promise.all([
+  const [{ data: vinculos }, { data: catalogos }, { data: seccionesGuardadas }, { data: fotos }, opciones] =
+    await Promise.all([
       supabase
         .from("paciente_responsable")
         .select("parentesco, es_principal, responsable:responsable_id(*)")
@@ -78,7 +79,7 @@ export default async function PaginaDictamenExpediente({
         .select("seccion, definicion")
         .eq("jornada_id", expediente.jornada_id)
         .eq("vigente", true),
-      supabase.from("expediente_seccion").select("seccion, datos").eq("expediente_id", expediente.id),
+      supabase.from("expediente_seccion").select("seccion, datos, completa").eq("expediente_id", expediente.id),
       supabase
         .from("documento")
         .select("id, archivo_path, vista_foto")
@@ -86,7 +87,6 @@ export default async function PaginaDictamenExpediente({
         .eq("tipo", "foto_paciente")
         .eq("activo", true)
         .order("creado_en", { ascending: false }),
-      puedeGestionarFotos(supabase),
       obtenerOpcionesDictamen(supabase, expediente.jornada_id),
     ]);
 
@@ -94,10 +94,8 @@ export default async function PaginaDictamenExpediente({
   const principal = vinculos?.[0];
   const dictamen = Array.isArray(expediente.dictamen_etapa1) ? expediente.dictamen_etapa1[0] : expediente.dictamen_etapa1;
   const folioActivo = (Array.isArray(expediente.folio) ? expediente.folio : [expediente.folio]).find((f) => f?.activo);
-  const { data: medico } = dictamen
-    ? await supabase.from("usuario_perfil").select("nombre").eq("id", dictamen.medico_id).maybeSingle()
-    : { data: null };
   const qrSvg = folioActivo ? await generarQrSvg(folioActivo.folio_texto) : null;
+
   const fotosPacienteConNulos = await Promise.all(
     (fotos ?? []).map(async (f) => ({
       id: f.id,
@@ -109,14 +107,6 @@ export default async function PaginaDictamenExpediente({
     (f): f is FotoInfo => f.url !== null && f.vista !== null,
   );
 
-  const catalogoAntecedentes = catalogos?.find((c) => c.seccion === "antecedentes");
-  const definicionAntecedentes = catalogoAntecedentes?.definicion as unknown as DefinicionCatalogo | undefined;
-  const seccionAntecedentes = seccionesGuardadas?.find((s) => s.seccion === "antecedentes");
-
-  const catalogoSocioeconomico = catalogos?.find((c) => c.seccion === "socioeconomico");
-  const definicionSocioeconomico = catalogoSocioeconomico?.definicion as unknown as DefinicionCatalogo | undefined;
-  const seccionSocioeconomico = seccionesGuardadas?.find((s) => s.seccion === "socioeconomico");
-
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -127,24 +117,13 @@ export default async function PaginaDictamenExpediente({
           </h1>
           <p className="text-muted-foreground">{jornada?.nombre}</p>
         </div>
-        <Button variant="outline" nativeButton={false} render={<Link href="/pacientes" />}>
-          Volver a pacientes
-        </Button>
+        <div className="flex items-center gap-3">
+          <Badge>{ETIQUETA_ESTADO[expediente.estado]}</Badge>
+          <Button variant="outline" nativeButton={false} render={<Link href="/pacientes" />}>
+            Volver a pacientes
+          </Button>
+        </div>
       </div>
-
-      {expediente.estado === "borrador" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Captura en progreso</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Historia clínica o Datos socioeconómicos todavía no están completos. Puedes
-              registrar el dictamen de todas formas.
-            </p>
-          </CardContent>
-        </Card>
-      )}
 
       <Card>
         <CardHeader>
@@ -158,6 +137,10 @@ export default async function PaginaDictamenExpediente({
           <p>
             <span className="text-muted-foreground">Sexo: </span>
             {expediente.paciente.sexo === "H" ? "Masculino" : "Femenino"}
+          </p>
+          <p>
+            <span className="text-muted-foreground">CURP: </span>
+            {expediente.paciente.curp ?? "—"}
           </p>
           <p>
             <span className="text-muted-foreground">Teléfono: </span>
@@ -194,48 +177,53 @@ export default async function PaginaDictamenExpediente({
           <CardTitle>Foto del paciente</CardTitle>
         </CardHeader>
         <CardContent>
-          <FotoPaciente
-            expedienteId={expediente.id}
-            fotos={fotosPaciente}
-            editable
-            puedeEliminar={puedeEliminarFotos}
-          />
+          <FotoPaciente expedienteId={expediente.id} fotos={fotosPaciente} editable={false} puedeEliminar={false} />
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="divide-y pt-6">
-          {(
-            [
-              ["antecedentes", definicionAntecedentes, seccionAntecedentes],
-              ["socioeconomico", definicionSocioeconomico, seccionSocioeconomico],
-            ] as const
-          ).map(([seccion, definicion, guardado]) => (
-            <Collapsible key={seccion} className="py-2 first:pt-0 last:pb-0">
-              <CollapsibleTrigger>{TITULO_SECCION[seccion]}</CollapsibleTrigger>
-              <CollapsibleContent>
-                {definicion ? (
-                  <FormularioSeccion
-                    expedienteId={expediente.id}
-                    seccion={seccion}
-                    definicion={definicion}
-                    datosIniciales={(guardado?.datos as unknown as DatosSeccion) ?? {}}
-                    soloLectura
-                    motivoSoloLectura="aquí solo se consulta — se edita desde /captura"
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Sin catálogo configurado para esta jornada. Un administrativo debe cargarlo en
-                    /admin/catalogo.
-                  </p>
-                )}
-              </CollapsibleContent>
-            </Collapsible>
-          ))}
-        </CardContent>
-      </Card>
+      {(["antecedentes", "socioeconomico"] as const).map((seccion) => {
+        const catalogo = catalogos?.find((c) => c.seccion === seccion);
+        const guardado = seccionesGuardadas?.find((s) => s.seccion === seccion);
+        if (!catalogo) {
+          return (
+            <Card key={seccion}>
+              <CardHeader>
+                <CardTitle>{TITULO_SECCION[seccion]}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Sin catálogo configurado para esta jornada.</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        const definicion = catalogo.definicion as unknown as DefinicionCatalogo;
+        const datos = (guardado?.datos as unknown as DatosSeccion) ?? {};
+        const completa = seccionCompleta(todosLosCampos(definicion), datos);
+        return (
+          <Card key={seccion}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>{TITULO_SECCION[seccion]}</CardTitle>
+                <Badge variant={completa ? "default" : "secondary"}>
+                  {completa ? "Completa" : "Faltan campos"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <FormularioSeccion
+                expedienteId={expediente.id}
+                seccion={seccion}
+                definicion={definicion}
+                datosIniciales={datos}
+                soloLectura
+                motivoSoloLectura="esta pantalla es de solo consulta"
+              />
+            </CardContent>
+          </Card>
+        );
+      })}
 
-      {dictamen ? (
+      {dictamen && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -258,10 +246,6 @@ export default async function PaginaDictamenExpediente({
                 {dictamen.recomendacion}
               </p>
             )}
-            <p className="text-xs text-muted-foreground">
-              {medico?.nombre ?? "médico ya no disponible"} —{" "}
-              {new Date(dictamen.fecha).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}
-            </p>
             {!folioActivo && (
               <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/imprimir/constancia/${expediente.id}`} />}>
                 Imprimir constancia
@@ -269,8 +253,6 @@ export default async function PaginaDictamenExpediente({
             )}
           </CardContent>
         </Card>
-      ) : (
-        <FormularioDictamen expedienteId={expediente.id} opciones={opciones} />
       )}
 
       {folioActivo && qrSvg && (

@@ -41,6 +41,8 @@ export default async function PaginaAdmin() {
     apto_laser: number | null;
     no_apto: number | null;
     regresar_6_meses: number | null;
+    cirugia_guanajuato: number | null;
+    cirugia_leon: number | null;
     expedientes_hoy: number | null;
     dictaminados_hoy: number | null;
   } | null = null;
@@ -50,7 +52,7 @@ export default async function PaginaAdmin() {
     const { data } = await supabase
       .from("vista_conteos_jornada")
       .select(
-        "expedientes, borradores, completos, dictaminados, apto_cirugia, apto_laser, no_apto, regresar_6_meses, expedientes_hoy, dictaminados_hoy",
+        "expedientes, borradores, completos, dictaminados, apto_cirugia, apto_laser, no_apto, regresar_6_meses, cirugia_guanajuato, cirugia_leon, expedientes_hoy, dictaminados_hoy",
       )
       .eq("jornada_id", jornada.id)
       .maybeSingle();
@@ -114,6 +116,18 @@ export default async function PaginaAdmin() {
               resaltado
               href="/admin/expedientes?dictamen=apto_laser"
             />
+            <Conteo
+              etiqueta="Aptos — cirugía Guanajuato"
+              valor={conteos?.cirugia_guanajuato ?? 0}
+              resaltado
+              href="/admin/expedientes?dictamen=cirugia_guanajuato"
+            />
+            <Conteo
+              etiqueta="Aptos — cirugía León"
+              valor={conteos?.cirugia_leon ?? 0}
+              resaltado
+              href="/admin/expedientes?dictamen=cirugia_leon"
+            />
             <Conteo etiqueta="No aptos" valor={conteos?.no_apto ?? 0} href="/admin/expedientes?dictamen=no_apto" />
             <Conteo
               etiqueta="Regresar en 6 meses"
@@ -125,11 +139,11 @@ export default async function PaginaAdmin() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Link href="/admin/expedientes">
+        <Link href="/pacientes">
           <Card className="transition-colors hover:bg-muted/50">
             <CardHeader>
               <CardTitle>Expedientes</CardTitle>
-              <CardDescription>Listado con filtros y exportación del padrón a CSV.</CardDescription>
+              <CardDescription>Lista de pacientes — captura, dictamen y vista de cada uno.</CardDescription>
             </CardHeader>
           </Card>
         </Link>
@@ -170,6 +184,14 @@ export default async function PaginaAdmin() {
             <CardHeader>
               <CardTitle>Catálogo de campos</CardTitle>
               <CardDescription>Historia clínica y datos socioeconómicos, sin desplegar.</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+        <Link href="/admin/dictamen-opciones">
+          <Card className="transition-colors hover:bg-muted/50">
+            <CardHeader>
+              <CardTitle>Opciones de dictamen</CardTitle>
+              <CardDescription>Salidas del dictamen médico para la jornada, sin desplegar.</CardDescription>
             </CardHeader>
           </Card>
         </Link>

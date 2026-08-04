@@ -1,20 +1,15 @@
 import { notFound } from "next/navigation";
 
+import { etiquetaResultado, obtenerOpcionesDictamen } from "@/lib/dictamen";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import type { ResultadoDictamen } from "@/lib/supabase/tipos";
 import { Logo } from "@/components/marca/logo";
 
 import { BotonImprimir } from "../../boton-imprimir";
 
-const ETIQUETA_RESULTADO: Record<ResultadoDictamen, string> = {
-  apto_cirugia: "Apto para cirugía",
-  apto_laser: "Apto para láser",
-  no_apto: "No apto",
-  regresar_6_meses: "Regresar en 6 meses",
-};
-
 interface FilaExpediente {
   id: string;
+  jornada_id: string;
   paciente: { nombre: string; apellido_paterno: string; apellido_materno: string | null } | null;
   jornada: { nombre: string; sede: string } | null;
   dictamen_etapa1: {
@@ -38,7 +33,7 @@ export default async function PaginaImprimirConstancia({
   const { data } = await supabase
     .from("expediente")
     .select(
-      "id, paciente:paciente_id(nombre, apellido_paterno, apellido_materno), jornada:jornada_id(nombre, sede), dictamen_etapa1(resultado, observaciones, recomendacion, medico_id, fecha)",
+      "id, jornada_id, paciente:paciente_id(nombre, apellido_paterno, apellido_materno), jornada:jornada_id(nombre, sede), dictamen_etapa1(resultado, observaciones, recomendacion, medico_id, fecha)",
     )
     .eq("id", expedienteId)
     .eq("activo", true)
@@ -46,15 +41,28 @@ export default async function PaginaImprimirConstancia({
 
   const fila = data as unknown as FilaExpediente | null;
   const dictamen = fila?.dictamen_etapa1;
-  if (!fila || !fila.paciente || !dictamen || dictamen.resultado === "apto_cirugia" || dictamen.resultado === "apto_laser") {
+
+  // La constancia es para quien NO se lleva folio — se consulta directo en
+  // vez de asumir por resultado (con cirugía dividida por sede, un simple
+  // `resultado === "apto_cirugia" || "apto_laser"` ya no cubriría todos los
+  // resultados que sí asignan folio, y habría que acordarse de tocar esto
+  // cada vez que el catálogo de dictamen gane una salida nueva).
+  const { count: tieneFolio } = fila
+    ? await supabase
+        .from("folio")
+        .select("id", { count: "exact", head: true })
+        .eq("expediente_id", fila.id)
+        .eq("activo", true)
+    : { count: 0 };
+
+  if (!fila || !fila.paciente || !dictamen || (tieneFolio ?? 0) > 0) {
     notFound();
   }
 
-  const { data: medico } = await supabase
-    .from("usuario_perfil")
-    .select("nombre")
-    .eq("id", dictamen.medico_id)
-    .maybeSingle();
+  const [{ data: medico }, opciones] = await Promise.all([
+    supabase.from("usuario_perfil").select("nombre").eq("id", dictamen.medico_id).maybeSingle(),
+    obtenerOpcionesDictamen(supabase, fila.jornada_id),
+  ]);
 
   const nombreCompleto = `${fila.paciente.nombre} ${fila.paciente.apellido_paterno} ${fila.paciente.apellido_materno ?? ""}`.trim();
 
@@ -81,7 +89,7 @@ export default async function PaginaImprimirConstancia({
           </p>
           <p>
             <span className="text-muted-foreground">Resultado: </span>
-            {ETIQUETA_RESULTADO[dictamen.resultado]}
+            {etiquetaResultado(dictamen.resultado, opciones).texto}
           </p>
           {dictamen.observaciones && (
             <p>

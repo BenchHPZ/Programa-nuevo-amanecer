@@ -17,12 +17,15 @@ export function FormularioSeccion({
   definicion,
   datosIniciales,
   soloLectura = false,
+  motivoSoloLectura = "tu rol no puede editar esta sección",
 }: {
   expedienteId: string;
   seccion: "antecedentes" | "socioeconomico";
   definicion: DefinicionCatalogo;
   datosIniciales: DatosSeccion;
   soloLectura?: boolean;
+  /** Texto tras "Solo lectura — " cuando `soloLectura` es true. */
+  motivoSoloLectura?: string;
 }) {
   const [datos, setDatos] = useState<DatosSeccion>(datosIniciales);
   const [estadoGuardado, setEstadoGuardado] = useState<EstadoGuardado>("guardado");
@@ -77,7 +80,7 @@ export function FormularioSeccion({
         </div>
       ))}
       {soloLectura ? (
-        <p className="text-xs text-muted-foreground">Solo lectura — tu rol no puede editar esta sección.</p>
+        <p className="text-xs text-muted-foreground">Solo lectura — {motivoSoloLectura}.</p>
       ) : (
         <div className="flex items-center justify-between">
           <IndicadorGuardado estado={estadoGuardado} error={errorGuardado} />

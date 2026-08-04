@@ -121,6 +121,6 @@ export async function guardarCatalogo(
   if (errorAlta) return { error: errorAlta.message };
 
   revalidatePath("/admin/catalogo");
-  revalidatePath("/captura");
+  revalidatePath("/pacientes");
   return { exito: true, version: siguienteVersion };
 }

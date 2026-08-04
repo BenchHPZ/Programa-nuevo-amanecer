@@ -1,7 +1,7 @@
 # Modelo de datos
 
 **Programa Nuevo Amanecer, A.C.**
-Versión 1.1 · 6 de agosto de 2026
+Versión 1.2 · 6 de agosto de 2026
 
 ---
 
@@ -117,11 +117,13 @@ expediente_seccion (
 ### Dictamen y folio
 
 ```sql
--- Cuatro salidas posibles (RN-12).
+-- Vocabulario cerrado, configurable por jornada (RN-12, RF-145).
 dictamen_etapa1 (
   expediente_id, medico_id,
-  resultado,                          -- apto_cirugia | apto_laser
-                                      -- no_apto | regresar_6_meses
+  resultado,                          -- apto_cirugia | apto_laser | no_apto
+                                      -- regresar_6_meses | cirugia_guanajuato
+                                      -- cirugia_leon (el enum crece cuando
+                                      -- una edición necesita una salida nueva)
   observaciones, recomendacion,       -- recomendación de canalización (RF-142)
   fecha, firma_archivo_path
 )
@@ -130,15 +132,20 @@ dictamen_etapa1 (
 folio (
   id, expediente_id, jornada_id,
   servicio,                           -- cirugia | laser
+  sede,                               -- 'general' | 'gto' | 'leon' — serie propia
+                                      -- de folio cuando cirugía se divide por sede
   consecutivo, folio_texto, digito_verificador,
-  UNIQUE (jornada_id, servicio, consecutivo)
+  UNIQUE (jornada_id, servicio, sede, consecutivo)
 )
 ```
 
 **Formato:** `NA-2026B-C-0147` → programa · jornada · servicio (C/L) · consecutivo, más dígito
-verificador. El QR codifica la cadena completa. La asignación es transaccional sobre un contador
-por jornada y servicio, de modo que cinco capturistas simultáneos no generen colisiones ni
-huecos (RF-151).
+verificador. Cuando la jornada divide cirugía por sede, se inserta un segmento más:
+`NA-2026B-C-GTO-0147`. El QR codifica la cadena completa. La asignación es transaccional sobre
+un contador por jornada, servicio y sede, de modo que varios capturistas simultáneos no generen
+colisiones ni huecos (RF-151). `sede` es `NOT NULL` con el sentinela `'general'` — nunca `NULL`,
+porque una columna en `NULL` no "empata" para el `UNIQUE`/`ON CONFLICT` que hace atómico el
+contador.
 
 ### Documentos
 
@@ -179,6 +186,15 @@ catalogo_campos (
   jornada_id, seccion,
   definicion JSONB,                   -- { campos: [...] } o { subsecciones: [{ titulo, campos }] }
   version                             -- versionado por jornada (RF-132)
+)
+
+-- Mismo patrón que catalogo_campos, sin `seccion`: un solo catálogo de
+-- salidas de dictamen por jornada (RF-145). Sin fila vigente, la
+-- aplicación usa las 4 salidas originales como default.
+catalogo_dictamen (
+  jornada_id,
+  definicion JSONB,                   -- { opciones: [{ resultado, etiqueta, descripcion? }] }
+  version
 )
 
 audit_log (

@@ -8,16 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { OpcionDictamen } from "@/lib/dictamen";
 import type { ResultadoDictamen } from "@/lib/supabase/tipos";
 
-const SALIDAS: { valor: ResultadoDictamen; etiqueta: string; descripcion: string }[] = [
-  { valor: "apto_cirugia", etiqueta: "Apto para cirugía", descripcion: "Se le asigna folio de cirugía." },
-  { valor: "apto_laser", etiqueta: "Apto para láser", descripcion: "Se le asigna folio de láser." },
-  { valor: "no_apto", etiqueta: "No apto", descripcion: "Requiere recomendación de canalización." },
-  { valor: "regresar_6_meses", etiqueta: "Regresar en 6 meses", descripcion: "Sin folio; queda documentado el motivo." },
-];
-
-export function FormularioDictamen({ expedienteId }: { expedienteId: string }) {
+export function FormularioDictamen({
+  expedienteId,
+  opciones,
+}: {
+  expedienteId: string;
+  /** Catálogo de la jornada (o las 4 salidas originales) — ver lib/dictamen.ts. */
+  opciones: OpcionDictamen[];
+}) {
   const router = useRouter();
   const [resultado, setResultado] = useState<ResultadoDictamen | null>(null);
   const [observaciones, setObservaciones] = useState("");
@@ -45,18 +46,18 @@ export function FormularioDictamen({ expedienteId }: { expedienteId: string }) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-2 sm:grid-cols-2">
-          {SALIDAS.map((s) => (
+          {opciones.map((o) => (
             <button
-              key={s.valor}
+              key={o.resultado}
               type="button"
-              onClick={() => setResultado(s.valor)}
-              aria-pressed={resultado === s.valor}
+              onClick={() => setResultado(o.resultado)}
+              aria-pressed={resultado === o.resultado}
               className={`rounded-md border p-3 text-left transition-colors ${
-                resultado === s.valor ? "border-primary bg-primary/10" : "border-input hover:bg-muted/50"
+                resultado === o.resultado ? "border-primary bg-primary/10" : "border-input hover:bg-muted/50"
               }`}
             >
-              <p className="font-medium">{s.etiqueta}</p>
-              <p className="text-xs text-muted-foreground">{s.descripcion}</p>
+              <p className="font-medium">{o.etiqueta}</p>
+              {o.descripcion && <p className="text-xs text-muted-foreground">{o.descripcion}</p>}
             </button>
           ))}
         </div>

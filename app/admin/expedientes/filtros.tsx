@@ -20,6 +20,8 @@ export const ETIQUETA_RESULTADO: Record<string, string> = {
   apto_laser: "Apto para láser",
   no_apto: "No apto",
   regresar_6_meses: "Regresar en 6 meses",
+  cirugia_guanajuato: "Apto — cirugía Guanajuato",
+  cirugia_leon: "Apto — cirugía León",
 };
 
 const CLASES_SELECT =

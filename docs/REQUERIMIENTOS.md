@@ -75,15 +75,15 @@ Prioridades: **Crítico** (sin esto no hay jornada) · **Alto** · **Medio** · 
 | **RN-01** | Un paciente es **único** en el sistema. Se identifica por CURP cuando existe; si no, por nombre + fecha de nacimiento + sexo. |
 | **RN-02** | Un paciente puede tener **uno o varios expedientes**. Un expediente pertenece a exactamente un paciente y a exactamente una jornada. |
 | **RN-03** | Todo paciente debe tener **al menos un adulto responsable**, aunque el paciente sea mayor de edad. |
-| **RN-04** | La jornada ofrece exactamente **dos servicios**: cirugía y láser. |
+| **RN-04** | La jornada ofrece exactamente **dos servicios**: cirugía y láser. Cirugía puede subdividirse por **sede** (p. ej. Guanajuato/León) sin que eso agregue un tercer servicio. |
 | **RN-05** | El **folio se asigna únicamente** cuando el dictamen de Etapa 1 resulta apto, sea para cirugía o para láser. |
-| **RN-06** | El folio es **único e irrepetible dentro de una jornada** e indica a qué servicio corresponde. |
+| **RN-06** | El folio es **único e irrepetible dentro de una jornada** e indica a qué servicio corresponde — y, cuando la jornada divide cirugía por sede, a qué sede. |
 | **RN-07** | **Nadie sin folio de Etapa 1 puede ser programado para cirugía** en Etapa 2. Puede pasar a revisión, pero eso queda fuera del sistema. |
 | **RN-08** | **Ningún registro se elimina físicamente.** El borrado es lógico. |
 | **RN-09** | **Toda modificación queda registrada** con usuario, momento y valores anterior y posterior. |
 | **RN-10** | Un usuario **sin aprobación explícita no tiene acceso a ningún dato**. |
 | **RN-11** | Las jornadas ocurren **dos veces al año**, pero los plazos pueden acortarse o alargarse. |
-| **RN-12** | El dictamen de Etapa 1 tiene **exactamente cuatro salidas**: apto para cirugía · apto para láser · no apto con recomendación · regresar en 6 meses. |
+| **RN-12** | El dictamen de Etapa 1 se registra dentro de un **vocabulario cerrado de salidas posibles** (no texto libre), configurable por jornada (RF-145). Por defecto son cuatro: apto para cirugía · apto para láser · no apto con recomendación · regresar en 6 meses. |
 | **RN-13** | La autorización de Etapa 2 tiene **exactamente tres salidas**: apto para cirugía · reasignar a láser · regresar en 6 meses. |
 | **RN-14** | Los datos de salud son **datos personales sensibles**: requieren consentimiento expreso y por escrito, otorgado por el padre o tutor cuando el paciente es menor. |
 | **RN-15** | La información se conserva **un mínimo de 5 años** desde el último acto médico. |
@@ -139,11 +139,12 @@ Prioridades: **Crítico** (sin esto no hay jornada) · **Alto** · **Medio** · 
 
 | ID | Requerimiento | Prioridad |
 |---|---|---|
-| **RF-140** | El médico registra su dictamen con **cuatro salidas posibles** (RN-12). | Crítico |
+| **RF-140** | El médico registra su dictamen eligiendo entre las **salidas configuradas para la jornada** (RN-12). | Crítico |
 | **RF-141** | El dictamen queda ligado al **médico que lo emitió y al momento** en que lo hizo. | Crítico |
 | **RF-142** | En "no apto", capturar la **recomendación** de canalización a rehabilitación o reinserción social. | Alto |
 | **RF-143** | En "regresar en 6 meses", dejar constancia para que el caso aparezca en la **siguiente jornada**. | Alto |
 | **RF-144** | El dictamen apto **dispara automáticamente** la asignación de folio. | Crítico |
+| **RF-145** | Las **salidas del dictamen y su etiqueta son configurables por jornada**, sin desplegar código — mismo mecanismo de catálogo versionado que RF-130/131/132. Sin catálogo propio, la jornada usa las cuatro salidas originales. | Alto |
 
 ### 5.6 Folio
 

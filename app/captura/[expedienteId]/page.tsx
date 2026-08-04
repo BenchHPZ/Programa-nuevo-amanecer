@@ -186,8 +186,8 @@ export default async function PaginaExpediente({
         </div>
         <div className="flex items-center gap-3">
           <Badge>{ETIQUETA_ESTADO[expediente.estado]}</Badge>
-          <Button variant="outline" nativeButton={false} render={<Link href="/captura" />}>
-            Volver al listado
+          <Button variant="outline" nativeButton={false} render={<Link href="/pacientes" />}>
+            Volver a pacientes
           </Button>
         </div>
       </div>

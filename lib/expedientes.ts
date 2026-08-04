@@ -16,6 +16,8 @@ export const RESULTADOS = [
   "apto_laser",
   "no_apto",
   "regresar_6_meses",
+  "cirugia_guanajuato",
+  "cirugia_leon",
 ] as const;
 
 /** Valor extra del filtro de dictamen: aún no dictaminado. */

@@ -18,7 +18,7 @@ durante ~35-40 años.
 | **Etapa en curso** | Etapa 1 — Primera revisión |
 | **Jornada objetivo** | Guanajuato · 3 al 7 de agosto de 2026 |
 | **Ventana de desarrollo** | 27 de julio – 6 de agosto de 2026 |
-| **Última actualización** | 6 de agosto de 2026 |
+| **Última actualización** | 6 de agosto de 2026 (tarde) |
 
 ### Avance
 
@@ -117,18 +117,26 @@ Ver [`.env.example`](.env.example). La llave `SUPABASE_SERVICE_ROLE_KEY` es de s
 │   │   ├── exportar/          route handler: CSV con BOM, auditado en audit_log
 │   │   ├── importar/          contingencia en papel, con previsualización obligatoria
 │   │   ├── colaboradores/     bandeja de quien se ofreció a apoyar
+│   │   ├── dictamen-opciones/ salidas de dictamen por jornada, catálogo versionado (RF-145)
 │   │   └── usuarios/ jornadas/ catalogo/
-│   ├── captura/             listado, alta con dedupe, ficha con autoguardado
-│   │   ├── layout.tsx         header persistente (mismo componente que admin/dictamen)
+│   ├── pacientes/           lista central de expedientes (RF-121): capturista, médico,
+│   │                          administrativo e informista aterrizan aquí, cada fila con
+│   │                          Captura/Dictaminar/Vista según lo que el rol permita
+│   │   ├── layout.tsx         header persistente (mismo componente en los 4 módulos)
+│   │   └── [expedienteId]/    vista de solo consulta: captura, foto, folio y QR
+│   ├── captura/             alta con dedupe, ficha con autoguardado (el listado vive en /pacientes)
+│   │   ├── layout.tsx         header persistente
 │   │   ├── nuevo/             asistente: buscar/crear paciente y responsable
 │   │   ├── pre-registros/     bandeja pública: validar y promover (RF-181)
 │   │   └── [expedienteId]/    secciones 1-4 + papelería — médico tiene aquí las mismas
 │   │                          facultades que capturista (ver docs/MANUAL-ROLES.md §4)
-│   ├── dictamen/            listado del médico + dictamen (4 salidas) → folio + QR
-│   │   ├── layout.tsx         header persistente (mismo componente que admin/captura)
-│   │   └── [expedienteId]/    historia clínica, foto (3 vistas + eliminar) y dictamen
-│   └── imprimir/            folio (térmico/carta), constancia y 3 consentimientos
-│                              prellenados — window.print(), sin PDF en servidor
+│   ├── dictamen/            dictamen del médico → folio + QR (el listado vive en /pacientes)
+│   │   ├── layout.tsx         header persistente
+│   │   └── [expedienteId]/    historia clínica y datos socioeconómicos en consulta
+│   │                          (colapsables), foto (3 vistas + eliminar) y dictamen — salidas
+│   │                          configurables por jornada (RF-145, lib/dictamen.ts)
+│   └── imprimir/            folio (térmico/carta, con sede cuando aplica), constancia y 3
+│                              consentimientos prellenados — window.print(), sin PDF en servidor
 ├── components/
 │   ├── ui/                   shadcn/ui (Base UI)
 │   ├── marca/                logotipo, con las reglas de uso del manual
@@ -143,13 +151,15 @@ Ver [`.env.example`](.env.example). La llave `SUPABASE_SERVICE_ROLE_KEY` es de s
 │   ├── storage.ts            URLs firmadas de corta duración para el bucket privado
 │   ├── comprimir-imagen.ts   compresión de escaneos en el navegador antes de subir
 │   ├── expedientes.ts        consulta con filtros, compartida por listado y exportación
+│   ├── dictamen.ts           salidas de dictamen: catálogo por jornada + default de
+│   │                          las 4 originales, etiqueta configurable por resultado
 │   ├── csv.ts                lector de CSV para la importación de contingencia
 │   ├── importacion.ts        validación de filas, compartida por vista previa e importación
 │   ├── nombres.ts            separa "nombre completo" en nombre y apellidos (conjetura)
 │   ├── jornada.ts            jornada activa y próxima convocatoria pública
 │   ├── roles.ts               mapa rol → ruta del tablero, usado por el header y al iniciar sesión
-│   ├── permisos.ts            permisos de UI espejo de RLS: quién gestiona fotos, quién
-│   │                          edita cada sección del catálogo (antecedentes/socioeconómico)
+│   ├── permisos.ts            permisos de UI espejo de RLS: rol actual, quién gestiona
+│   │                          fotos, quién edita cada sección del catálogo
 │   └── supabase/             clientes (browser/server/admin/middleware) + tipos generados
 ├── scripts/
 │   ├── respaldo.ps1          respaldo manual: esquema + datos, con verificación
@@ -163,7 +173,7 @@ Ver [`.env.example`](.env.example). La llave `SUPABASE_SERVICE_ROLE_KEY` es de s
 └── privado/                 ⚠ EXCLUIDO DE GIT — datos reales
 ```
 
-No se usan route groups: las rutas internas (`/admin/*`, `/captura/*`) son URLs reales,
+No se usan route groups: las rutas internas (`/admin/*`, `/pacientes/*`, `/captura/*`) son URLs reales,
 protegidas por `proxy.ts` (sesión + estado `activo`) y, de fondo, por RLS.
 
 ---

@@ -1,7 +1,7 @@
 # Manual por rol
 
 **Programa Nuevo Amanecer, A.C. — sistema de gestión de jornadas**
-Versión 1.3 · 6 de agosto de 2026
+Versión 1.4 · 6 de agosto de 2026
 
 Este documento responde una sola pregunta: **¿qué me toca a mí?**
 
@@ -24,12 +24,10 @@ flowchart TD
 
     Cap["CAPTURISTA<br/>busca duplicados, captura<br/>las 4 secciones y la papelería"] --> Med
 
-    Med["MÉDICO DE TRIAGE<br/>Historia clínica, foto<br/>y registra el dictamen"] --> Apto{Resultado}
+    Med["MÉDICO DE TRIAGE<br/>consulta Historia clínica,<br/>sube foto y registra el dictamen"] --> Apto{Resultado}
 
-    Apto -->|apto cirugía| Folio["Folio asignado<br/>automáticamente"]
-    Apto -->|apto láser| Folio
-    Apto -->|no apto| Const["Constancia con<br/>la recomendación"]
-    Apto -->|regresar en 6 meses| Const
+    Apto -->|salida con folio| Folio["Folio asignado<br/>automáticamente"]
+    Apto -->|salida sin folio| Const["Constancia con<br/>la recomendación"]
 
     Folio --> Imp["Se imprime y<br/>se entrega a la familia"]
 
@@ -47,7 +45,7 @@ Comprobado con las cuentas de cada rol contra las políticas de la base.
 | Consultar expedientes y personas | ✅ | ✅ | ✅ | ✅ |
 | Ver quién modificó qué y cuándo | ✅ | ✅ | ✅ | ✅ |
 | Crear y editar personas | ✅ | ✅¹ | ✅ | ❌ |
-| Capturar Historia clínica | ✅ | ✅ | ✅ | ❌ |
+| Capturar Historia clínica | ✅ | ✅¹ | ✅ | ❌ |
 | Capturar Datos socioeconómicos | ✅ | ✅¹ | ✅ | ❌ |
 | Validar y promover pre-registros | ✅ | ✅¹ | ✅ | ❌ |
 | Subir papelería firmada | ✅ | ✅¹ | ✅ | ❌ |
@@ -64,8 +62,9 @@ Comprobado con las cuentas de cada rol contra las políticas de la base.
 | Ver quién se ofreció a colaborar | ❌ | ❌ | ✅ | ❌ |
 
 > ¹ **Solo dentro de `/captura`** — por ejemplo, si ayudas con un expediente que normalmente
-> llevaría un capturista. En `/dictamen` sigues sin ver estos controles: esa pantalla solo te
-> ofrece Historia clínica, la foto y el dictamen. Ver §4.
+> llevaría un capturista. En `/dictamen` ves Historia clínica y Datos socioeconómicos, pero
+> solo para **consultarlos**: aparecen colapsados y sin poder editarlos; esa pantalla se
+> centra en la foto y el dictamen. Ver §4.
 
 > **Una cuenta sin aprobar no ve absolutamente nada.** No es que se le oculten los botones: la
 > base de datos le devuelve cero filas. Comprobado.
@@ -78,7 +77,9 @@ Comprobado con las cuentas de cada rol contra las políticas de la base.
 responsable, llenas las cuatro secciones del expediente, imprimes la papelería, la recoges
 firmada y la subes. Cuando el expediente está completo, pasa al médico.
 
-**Qué ves al entrar.** El listado de expedientes de la jornada, en `/captura`.
+**Qué ves al entrar.** En `/pacientes`, el listado de expedientes de la jornada — la misma
+lista que ven médico, administrativo e informista; a ti te corresponden los botones
+**Captura** y **Vista** en cada fila. "Nuevo paciente", arriba, lleva al asistente de alta.
 
 **Lo que sí puedes**
 
@@ -117,30 +118,37 @@ siguiente jornada. Ver [OPERACION.md](OPERACION.md) §2.
 **Qué haces.** Valoras a cada paciente y registras tu dictamen. Tu resolución es lo que decide
 si la familia se va con un folio o con una constancia.
 
-**Qué ves al entrar.** En `/dictamen`, la lista de expedientes **completos** que esperan
-valoración. Un expediente a medio capturar no te aparece: falta información para decidir.
+**Qué ves al entrar.** En `/pacientes`, la misma lista que ven capturista, administrativo e
+informista — a ti te corresponden los botones **Dictaminar** y **Vista** en cada fila. No
+hace falta que la captura esté terminada: el dictamen se puede registrar en cuanto el
+paciente y su adulto responsable existen en el sistema, aunque Historia clínica o Datos
+socioeconómicos sigan a medias.
 
 **Lo que sí puedes**
 
 - Consultar el expediente entero.
-- **Editar la Historia clínica** (antes «antecedentes médicos», solo lectura para ti — ya no).
-  Guarda igual que cuando lo hace un capturista: automático, mientras escribes. Ahora puede venir
-  organizada en subsecciones con nombre (Motivo de consulta, Antecedentes heredofamiliares,
-  Exploración física general…) — es solo para ordenar la pantalla, se guarda igual.
+- **Consultar Historia clínica y Datos socioeconómicos**, en dos menús colapsables (cerrados
+  por defecto, haz clic para abrirlos) antes del dictamen. Aquí son **solo lectura** — para
+  editarlos entra al mismo expediente por `/captura` (ver el recuadro más abajo). Historia
+  clínica puede venir organizada en subsecciones con nombre (Motivo de consulta, Antecedentes
+  heredofamiliares, Exploración física general…), solo para ordenar la pantalla.
 - **Tomar o subir la foto del paciente**, desde el celular en el momento de la valoración —
   un botón de cámara en el teléfono, uno de archivo en escritorio. Se organiza en tres vistas
   fijas (anterior, lateral derecha, lateral izquierda), hasta 3 fotos por vista. Haz clic en
   cualquier foto para verla más grande sin salir de la página; ahí mismo puedes **eliminarla**
   si subiste la equivocada (tú o un administrativo, nadie más) — no se borra de verdad, queda
   desactivada y con rastro en la auditoría, igual que el resto del sistema.
-- Registrar el dictamen, con cuatro salidas posibles:
+- Registrar el dictamen, eligiendo entre las salidas que un administrativo haya configurado
+  para la jornada (`/admin` → Opciones de dictamen, sin desplegar código). En esta jornada
+  son cinco:
 
 ```mermaid
 flowchart LR
-    D{Dictamen} --> A["Apto para cirugía"] --> F["Se asigna folio solo"]
-    D --> B["Apto para láser"] --> F
-    D --> C["No apto"] --> R["Se registra la recomendación<br/>de a dónde acudir"]
-    D --> E["Regresar en 6 meses"] --> S["Queda anotado para<br/>la siguiente jornada"]
+    D{Dictamen} --> A["Cirugía Guanajuato"] --> F1["Folio propio,<br/>serie Guanajuato"]
+    D --> B["Cirugía León"] --> F2["Folio propio,<br/>serie León"]
+    D --> C["Láser"] --> F3["Folio de láser"]
+    D --> E["No apto"] --> R["Se registra la recomendación<br/>de a dónde acudir"]
+    D --> G["Retorno en edición<br/>posterior"] --> S["Queda anotado para<br/>la siguiente edición"]
 ```
 
 - Corregir un dictamen que registraste mal. Queda constancia del cambio.
@@ -150,8 +158,8 @@ flowchart LR
 - **Editar los datos personales del paciente o del adulto responsable** (nombre, CURP, teléfono,
   domicilio…) desde esta pantalla. Si hay un error ahí, se lo dices al capturista — o lo corriges
   tú mismo entrando por `/captura` (ver el recuadro siguiente).
-- **Ver ni editar Datos socioeconómicos** desde `/dictamen`. No aparece en esta pantalla — sí
-  puedes verla y editarla si entras al mismo expediente por `/captura`.
+- **Editar Historia clínica o Datos socioeconómicos** desde `/dictamen`. Ambas se ven (colapsadas,
+  de solo consulta) pero no se editan aquí — para eso entra al mismo expediente por `/captura`.
 - **Exportar o administrar.**
 
 > ℹ **Cuando entras por `/captura`, tienes las mismas facultades que un capturista.** Si ayudas
@@ -159,9 +167,9 @@ flowchart LR
 > Datos socioeconómicos— puedes editar personas, ambas secciones del catálogo, promover
 > pre-registros y subir papelería firmada, exactamente igual que un capturista. Es la base de
 > datos la que decide esto por tu rol, no la pantalla en la que estás parado: en `/dictamen`
-> simplemente no se te ofrecen esos controles, porque ahí tu trabajo es otro (Historia clínica,
-> foto, dictamen). No hay dos cuentas ni un cambio de rol — es la misma sesión, solo cambia lo
-> que la pantalla te muestra.
+> Historia clínica y Datos socioeconómicos se ven, pero no se editan — ahí tu trabajo es otro
+> (consultar, subir la foto, dictaminar). No hay dos cuentas ni un cambio de rol — es la misma
+> sesión, solo cambia lo que la pantalla te muestra.
 
 **Sobre el folio.** No lo generas tú a mano: al guardar un dictamen «apto», el sistema lo asigna
 en la misma operación. Si el dictamen se guardó, el folio existe. Nunca hay uno sin el otro.
@@ -170,9 +178,10 @@ en la misma operación. Si el dictamen se guardó, el folio existe. Nunca hay un
 
 | Situación | Qué hacer |
 |---|---|
-| El expediente no aparece en tu lista | Está incompleto. El capturista debe terminarlo |
+| El expediente que buscas no aparece | Puede ser de otra jornada, o no estar creado — pide al capturista que verifique |
+| El expediente todavía no tiene nada capturado | Puedes dictaminarlo de todas formas: el dictamen ya no espera a que termine la captura |
 | Te equivocaste de resultado | Corrígelo. Queda registrado quién lo cambió y cuándo |
-| Falta un estudio para decidir | Regresar en 6 meses es una salida válida, no un fracaso |
+| Falta un estudio para decidir | Aplazar el caso es una salida válida, no un fracaso — usa la opción de retorno que tenga configurada la jornada |
 | La foto salió mal | Haz clic en ella para ampliarla y elimínala ahí mismo, luego sube la correcta a esa misma vista (máx. 3 por vista) |
 
 ---
@@ -183,7 +192,8 @@ en la misma operación. Si el dictamen se guardó, el folio existe. Nunca hay un
 te llevas la información al cierre del día.
 
 **Qué ves al entrar.** En `/admin`, los conteos del día: cuántos expedientes, cuántos
-dictaminados, cuántos aptos para cirugía y para láser, cuántos no aptos.
+dictaminados, y un desglose por cada salida de dictamen configurada para la jornada (aptos
+por cada tipo de cirugía, aptos para láser, no aptos…).
 
 **Lo que sí puedes**
 
@@ -204,7 +214,9 @@ dictaminados, cuántos aptos para cirugía y para láser, cuántos no aptos.
   de esa cifra, e **imprimirla** con una vista mínima (nombre, fecha de nacimiento, estado o
   dictamen, folio) para no cargar más datos personales de los necesarios en el papel.
 - **Importar** lo capturado en papel durante una contingencia.
-- Crear jornadas, editar el catálogo de campos y revisar quién se ofreció a colaborar.
+- Crear jornadas, editar el catálogo de campos, **configurar las opciones de dictamen de la
+  jornada** (qué salidas ve el médico y con qué etiqueta — `/admin/dictamen-opciones`, sin
+  desplegar código) y revisar quién se ofreció a colaborar.
 
 **Lo que no puedes**
 
@@ -229,16 +241,18 @@ dictaminados, cuántos aptos para cirugía y para láser, cuántos no aptos.
 
 **Qué ves al entrar.**
 
-> ⚠ **Léelo antes de tu primer turno.** El sistema te lleva a la pantalla de captura. Al abrir un
-> expediente, **Historia clínica y Datos socioeconómicos ya te avisan bien**: se ven con los
-> campos apagados y una nota de «Solo lectura — tu rol no puede editar esta sección», así que ahí
-> no hay sorpresa.
+> ⚠ **Léelo antes de tu primer turno.** El sistema te lleva a `/pacientes`, la misma lista que
+> ven los demás roles — a ti solo te corresponde el botón **Vista** en cada fila, de puro
+> consulta. Si entras a un expediente por `/captura` (por ejemplo siguiendo un enlace viejo),
+> **Historia clínica y Datos socioeconómicos ya te avisan bien**: se ven con los campos
+> apagados y una nota de «Solo lectura — tu rol no puede editar esta sección», así que ahí no
+> hay sorpresa.
 >
-> **Lo que todavía no está corregido**: los datos del paciente/responsable, la papelería y el
-> botón «Nuevo expediente» **no** te avisan de la misma forma — se ven como si pudieras usarlos,
-> pero la base rechaza el cambio igual. No está descompuesto ni es tu culpa: tu cuenta es de
-> consulta. Mientras se termina de corregir en el resto de la pantalla: **si algo no responde, no
-> insistas — no es para ti.**
+> **Lo que todavía no está corregido** en esa misma pantalla de `/captura`: los datos del
+> paciente/responsable, la papelería y el botón «Nuevo expediente» **no** te avisan de la
+> misma forma — se ven como si pudieras usarlos, pero la base rechaza el cambio igual. No está
+> descompuesto ni es tu culpa: tu cuenta es de consulta. Mientras se termina de corregir:
+> **si algo no responde, no insistas — no es para ti.**
 
 **Lo que sí puedes**
 

@@ -8,10 +8,13 @@ import { Logo } from "@/components/marca/logo";
 import { BotonImprimir } from "../../boton-imprimir";
 
 const ETIQUETA_SERVICIO = { cirugia: "Cirugía", laser: "Láser" } as const;
+/** 'general' es la sede sentinela (sin división) — no se muestra. */
+const ETIQUETA_SEDE_FOLIO: Record<string, string> = { gto: "Guanajuato", leon: "León" };
 
 interface FilaFolio {
   folio_texto: string;
   servicio: keyof typeof ETIQUETA_SERVICIO;
+  sede: string;
   digito_verificador: number;
   expediente: {
     paciente: { nombre: string; apellido_paterno: string; apellido_materno: string | null } | null;
@@ -34,7 +37,7 @@ export default async function PaginaImprimirFolio({
   const { data } = await supabase
     .from("folio")
     .select(
-      "folio_texto, servicio, digito_verificador, expediente:expediente_id(paciente:paciente_id(nombre, apellido_paterno, apellido_materno), jornada:jornada_id(nombre, sede, fecha_etapa2))",
+      "folio_texto, servicio, sede, digito_verificador, expediente:expediente_id(paciente:paciente_id(nombre, apellido_paterno, apellido_materno), jornada:jornada_id(nombre, sede, fecha_etapa2))",
     )
     .eq("id", folioId)
     .eq("activo", true)
@@ -45,6 +48,8 @@ export default async function PaginaImprimirFolio({
 
   const { paciente, jornada } = fila.expediente;
   const nombreCompleto = `${paciente!.nombre} ${paciente!.apellido_paterno} ${paciente!.apellido_materno ?? ""}`.trim();
+  const etiquetaServicio = ETIQUETA_SERVICIO[fila.servicio]
+    + (ETIQUETA_SEDE_FOLIO[fila.sede] ? ` — ${ETIQUETA_SEDE_FOLIO[fila.sede]}` : "");
   const fechaEtapa2 = jornada?.fecha_etapa2
     ? new Date(jornada.fecha_etapa2).toLocaleDateString("es-MX", { dateStyle: "long" })
     : "Por confirmar";
@@ -82,7 +87,7 @@ export default async function PaginaImprimirFolio({
             <div className="flex justify-center" dangerouslySetInnerHTML={{ __html: qrSvg }} />
             <hr />
             <p>{nombreCompleto}</p>
-            <p>Servicio: {ETIQUETA_SERVICIO[fila.servicio]}</p>
+            <p>Servicio: {etiquetaServicio}</p>
             <hr />
             <p>2ª revisión: {fechaEtapa2}</p>
             <p>{jornada?.sede}</p>
@@ -121,7 +126,7 @@ export default async function PaginaImprimirFolio({
               </p>
               <p>
                 <span className="text-muted-foreground">Servicio asignado: </span>
-                {ETIQUETA_SERVICIO[fila.servicio]}
+                {etiquetaServicio}
               </p>
               <p>
                 <span className="text-muted-foreground">Fecha de la segunda revisión: </span>

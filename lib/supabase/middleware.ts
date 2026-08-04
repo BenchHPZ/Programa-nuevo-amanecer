@@ -9,7 +9,7 @@ import type { Database } from "./tipos";
  * en Row Level Security (RNF-10) — si algo se cuela aquí, la base de datos
  * lo detiene igual.
  */
-const RUTAS_PROTEGIDAS = ["/captura", "/dictamen", "/admin", "/imprimir"];
+const RUTAS_PROTEGIDAS = ["/captura", "/dictamen", "/admin", "/imprimir", "/pacientes"];
 const RUTAS_SOLO_ADMINISTRATIVO = ["/admin"];
 
 export async function actualizarSesion(request: NextRequest) {
