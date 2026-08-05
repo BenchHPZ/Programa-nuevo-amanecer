@@ -95,6 +95,9 @@ export default async function PaginaVistaPaciente({
   const dictamen = Array.isArray(expediente.dictamen_etapa1) ? expediente.dictamen_etapa1[0] : expediente.dictamen_etapa1;
   const folioActivo = (Array.isArray(expediente.folio) ? expediente.folio : [expediente.folio]).find((f) => f?.activo);
   const qrSvg = folioActivo ? await generarQrSvg(folioActivo.folio_texto) : null;
+  const { data: modificador } = dictamen?.modificado_por
+    ? await supabase.from("usuario_perfil").select("nombre").eq("id", dictamen.modificado_por).maybeSingle()
+    : { data: null };
 
   const fotosPacienteConNulos = await Promise.all(
     (fotos ?? []).map(async (f) => ({
@@ -244,6 +247,12 @@ export default async function PaginaVistaPaciente({
               <p>
                 <span className="text-muted-foreground">Recomendación: </span>
                 {dictamen.recomendacion}
+              </p>
+            )}
+            {dictamen.modificado_por && dictamen.modificado_en && (
+              <p className="text-xs text-muted-foreground">
+                Modificado por {modificador?.nombre ?? "usuario ya no disponible"} —{" "}
+                {new Date(dictamen.modificado_en).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}
               </p>
             )}
             {!folioActivo && (

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { generarQrSvg } from "@/lib/qr";
 import { etiquetaResultado, obtenerOpcionesDictamen } from "@/lib/dictamen";
-import { puedeGestionarFotos } from "@/lib/permisos";
+import { puedeGestionarFotos, rolActual } from "@/lib/permisos";
 import { urlFirmadaPapeleria } from "@/lib/storage";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ import { FotoPaciente, type FotoInfo } from "@/components/expediente/foto-pacien
 import type { EstadoExpediente, Tables } from "@/lib/supabase/tipos";
 
 import { FormularioDictamen } from "./formulario-dictamen";
+import { ModificarDictamen } from "./modificar-dictamen";
 
 const TITULO_SECCION = {
   antecedentes: "Historia clínica",
@@ -60,6 +61,9 @@ export default async function PaginaDictamenExpediente({
 
   if (!expediente || !expediente.paciente) notFound();
 
+  const rol = await rolActual(supabase);
+  if (rol !== "medico_triage" && rol !== "administrativo") notFound();
+
   const [
     { data: vinculos },
     { data: catalogos },
@@ -96,6 +100,9 @@ export default async function PaginaDictamenExpediente({
   const folioActivo = (Array.isArray(expediente.folio) ? expediente.folio : [expediente.folio]).find((f) => f?.activo);
   const { data: medico } = dictamen
     ? await supabase.from("usuario_perfil").select("nombre").eq("id", dictamen.medico_id).maybeSingle()
+    : { data: null };
+  const { data: modificador } = dictamen?.modificado_por
+    ? await supabase.from("usuario_perfil").select("nombre").eq("id", dictamen.modificado_por).maybeSingle()
     : { data: null };
   const qrSvg = folioActivo ? await generarQrSvg(folioActivo.folio_texto) : null;
   const fotosPacienteConNulos = await Promise.all(
@@ -262,11 +269,28 @@ export default async function PaginaDictamenExpediente({
               {medico?.nombre ?? "médico ya no disponible"} —{" "}
               {new Date(dictamen.fecha).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}
             </p>
-            {!folioActivo && (
-              <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/imprimir/constancia/${expediente.id}`} />}>
-                Imprimir constancia
-              </Button>
+            {dictamen.modificado_por && dictamen.modificado_en && (
+              <p className="text-xs text-muted-foreground">
+                Modificado por {modificador?.nombre ?? "usuario ya no disponible"} —{" "}
+                {new Date(dictamen.modificado_en).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}
+              </p>
             )}
+            <div className="flex flex-wrap gap-2">
+              {!folioActivo && (
+                <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/imprimir/constancia/${expediente.id}`} />}>
+                  Imprimir constancia
+                </Button>
+              )}
+            </div>
+            <ModificarDictamen
+              expedienteId={expediente.id}
+              opciones={opciones}
+              valorInicial={{
+                resultado: dictamen.resultado,
+                observaciones: dictamen.observaciones ?? "",
+                recomendacion: dictamen.recomendacion ?? "",
+              }}
+            />
           </CardContent>
         </Card>
       ) : (

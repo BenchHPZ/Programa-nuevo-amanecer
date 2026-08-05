@@ -77,7 +77,7 @@ Prioridades: **Crítico** (sin esto no hay jornada) · **Alto** · **Medio** · 
 | **RN-03** | Todo paciente debe tener **al menos un adulto responsable**, aunque el paciente sea mayor de edad. |
 | **RN-04** | La jornada ofrece exactamente **dos servicios**: cirugía y láser. Cirugía puede subdividirse por **sede** (p. ej. Guanajuato/León) sin que eso agregue un tercer servicio. |
 | **RN-05** | El **folio se asigna únicamente** cuando el dictamen de Etapa 1 resulta apto, sea para cirugía o para láser. |
-| **RN-06** | El folio es **único e irrepetible dentro de una jornada** e indica a qué servicio corresponde — y, cuando la jornada divide cirugía por sede, a qué sede. |
+| **RN-06** | El folio es **único e irrepetible dentro de una jornada** e indica a qué servicio corresponde — y, cuando la jornada divide cirugía por sede, a qué sede. Un folio anulado (por modificarse el dictamen, RF-147) nunca se reutiliza ni se reasigna su consecutivo. |
 | **RN-07** | **Nadie sin folio de Etapa 1 puede ser programado para cirugía** en Etapa 2. Puede pasar a revisión, pero eso queda fuera del sistema. |
 | **RN-08** | **Ningún registro se elimina físicamente.** El borrado es lógico. |
 | **RN-09** | **Toda modificación queda registrada** con usuario, momento y valores anterior y posterior. |
@@ -145,6 +145,8 @@ Prioridades: **Crítico** (sin esto no hay jornada) · **Alto** · **Medio** · 
 | **RF-143** | En "regresar en 6 meses", dejar constancia para que el caso aparezca en la **siguiente jornada**. | Alto |
 | **RF-144** | El dictamen apto **dispara automáticamente** la asignación de folio. | Crítico |
 | **RF-145** | Las **salidas del dictamen y su etiqueta son configurables por jornada**, sin desplegar código — mismo mecanismo de catálogo versionado que RF-130/131/132. Sin catálogo propio, la jornada usa las cuatro salidas originales. | Alto |
+| **RF-146** | Un dictamen ya registrado puede **modificarse** (salida y observaciones) — solo médico o administrativo. Queda registrado quién y cuándo hizo la modificación, por separado de quién y cuándo lo registró originalmente (RF-141). | Alto |
+| **RF-147** | Si la modificación cambia la **categoría de folio** (servicio y/o sede), el folio anterior se **anula** (RN-08) y, si la nueva salida también implica folio, se **asigna uno nuevo** en su propia serie — nunca se reutiliza un consecutivo. | Alto |
 
 ### 5.6 Folio
 

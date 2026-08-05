@@ -1,7 +1,7 @@
 # Manual por rol
 
 **Programa Nuevo Amanecer, A.C. — sistema de gestión de jornadas**
-Versión 1.4 · 6 de agosto de 2026
+Versión 1.5 · 6 de agosto de 2026
 
 Este documento responde una sola pregunta: **¿qué me toca a mí?**
 
@@ -94,7 +94,8 @@ lista que ven médico, administrativo e informista; a ti te corresponden los bot
 
 **Lo que no puedes, y qué pasa si lo intentas**
 
-- **Registrar o cambiar un dictamen.** Aunque llegaras a la pantalla, la base lo rechaza.
+- **Registrar o cambiar un dictamen.** La pantalla de `/dictamen` ni siquiera se abre con tu
+  cuenta (responde «no encontrado»); no es solo que el botón esté oculto.
 - **Exportar el padrón.** Es del administrativo, y cada exportación queda registrada con nombre.
 - **Aprobar usuarios, crear jornadas o tocar el catálogo.**
 
@@ -151,7 +152,12 @@ flowchart LR
     D --> G["Retorno en edición<br/>posterior"] --> S["Queda anotado para<br/>la siguiente edición"]
 ```
 
-- Corregir un dictamen que registraste mal. Queda constancia del cambio.
+- Corregir un dictamen que registraste mal — botón **Modificar dictamen** dentro del mismo
+  dictamen ya guardado. Te pide confirmar explícitamente antes de guardar, porque si cambias
+  la salida a otra categoría de folio (por ejemplo de "Cirugía Guanajuato" a "No apto", o de
+  "Láser" a "Cirugía León"), **el folio anterior se anula** y se asigna uno nuevo — nunca se
+  reutiliza el número. Queda registrado quién hizo la corrección y cuándo, por separado de
+  quién registró el dictamen original.
 
 **Lo que no puedes en `/dictamen`, y qué pasa si lo intentas**
 
@@ -253,6 +259,10 @@ por cada tipo de cirugía, aptos para láser, no aptos…).
 > misma forma — se ven como si pudieras usarlos, pero la base rechaza el cambio igual. No está
 > descompuesto ni es tu culpa: tu cuenta es de consulta. Mientras se termina de corregir:
 > **si algo no responde, no insistas — no es para ti.**
+>
+> **La pantalla de dictamen (`/dictamen`) directamente no se abre con tu cuenta** — ni con el
+> enlace desde otro lado ni escribiendo la URL a mano: la página responde «no encontrado». Lo
+> mismo aplica a capturista. Solo médico y administrativo pueden entrar ahí.
 
 **Lo que sí puedes**
 

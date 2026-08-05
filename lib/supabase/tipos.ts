@@ -192,6 +192,8 @@ export type Database = {
           firma_archivo_path: string | null
           id: string
           medico_id: string
+          modificado_en: string | null
+          modificado_por: string | null
           observaciones: string | null
           recomendacion: string | null
           resultado: Database["public"]["Enums"]["resultado_dictamen"]
@@ -202,6 +204,8 @@ export type Database = {
           firma_archivo_path?: string | null
           id?: string
           medico_id: string
+          modificado_en?: string | null
+          modificado_por?: string | null
           observaciones?: string | null
           recomendacion?: string | null
           resultado: Database["public"]["Enums"]["resultado_dictamen"]
@@ -212,6 +216,8 @@ export type Database = {
           firma_archivo_path?: string | null
           id?: string
           medico_id?: string
+          modificado_en?: string | null
+          modificado_por?: string | null
           observaciones?: string | null
           recomendacion?: string | null
           resultado?: Database["public"]["Enums"]["resultado_dictamen"]
@@ -227,6 +233,13 @@ export type Database = {
           {
             foreignKeyName: "dictamen_etapa1_medico_id_fkey"
             columns: ["medico_id"]
+            isOneToOne: false
+            referencedRelation: "usuario_perfil"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dictamen_etapa1_modificado_por_fkey"
+            columns: ["modificado_por"]
             isOneToOne: false
             referencedRelation: "usuario_perfil"
             referencedColumns: ["id"]
@@ -818,6 +831,18 @@ export type Database = {
           p_responsable: Json
         }
         Returns: string
+      }
+      modificar_dictamen: {
+        Args: {
+          p_expediente_id: string
+          p_observaciones?: string
+          p_recomendacion?: string
+          p_resultado: Database["public"]["Enums"]["resultado_dictamen"]
+        }
+        Returns: {
+          dictamen: Database["public"]["Tables"]["dictamen_etapa1"]["Row"]
+          folio: Database["public"]["Tables"]["folio"]["Row"]
+        }[]
       }
       puede_escribir: { Args: never; Returns: boolean }
       registrar_dictamen: {

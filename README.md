@@ -18,7 +18,7 @@ durante ~35-40 años.
 | **Etapa en curso** | Etapa 1 — Primera revisión |
 | **Jornada objetivo** | Guanajuato · 3 al 7 de agosto de 2026 |
 | **Ventana de desarrollo** | 27 de julio – 6 de agosto de 2026 |
-| **Última actualización** | 6 de agosto de 2026 (tarde) |
+| **Última actualización** | 6 de agosto de 2026 (noche) |
 
 ### Avance
 
@@ -130,11 +130,16 @@ Ver [`.env.example`](.env.example). La llave `SUPABASE_SERVICE_ROLE_KEY` es de s
 │   │   ├── pre-registros/     bandeja pública: validar y promover (RF-181)
 │   │   └── [expedienteId]/    secciones 1-4 + papelería — médico tiene aquí las mismas
 │   │                          facultades que capturista (ver docs/MANUAL-ROLES.md §4)
-│   ├── dictamen/            dictamen del médico → folio + QR (el listado vive en /pacientes)
+│   ├── dictamen/            dictamen del médico → folio + QR (el listado vive en /pacientes),
+│   │                          solo medico_triage/administrativo — la ruta no abre para los
+│   │                          demás roles (RF-146)
 │   │   ├── layout.tsx         header persistente
 │   │   └── [expedienteId]/    historia clínica y datos socioeconómicos en consulta
 │   │                          (colapsables), foto (3 vistas + eliminar) y dictamen — salidas
-│   │                          configurables por jornada (RF-145, lib/dictamen.ts)
+│   │                          configurables por jornada (RF-145, lib/dictamen.ts); un
+│   │                          dictamen ya guardado se puede modificar (RF-146/RF-147),
+│   │                          con confirmación explícita y reasignación de folio si la
+│   │                          salida cambia de categoría
 │   └── imprimir/            folio (térmico/carta, con sede cuando aplica), constancia y 3
 │                              consentimientos prellenados — window.print(), sin PDF en servidor
 ├── components/

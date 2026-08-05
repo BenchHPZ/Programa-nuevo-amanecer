@@ -16,6 +16,7 @@ interface FilaFolio {
   servicio: keyof typeof ETIQUETA_SERVICIO;
   sede: string;
   digito_verificador: number;
+  activo: boolean;
   expediente: {
     paciente: { nombre: string; apellido_paterno: string; apellido_materno: string | null } | null;
     jornada: { nombre: string; sede: string; fecha_etapa2: string | null } | null;
@@ -37,10 +38,9 @@ export default async function PaginaImprimirFolio({
   const { data } = await supabase
     .from("folio")
     .select(
-      "folio_texto, servicio, sede, digito_verificador, expediente:expediente_id(paciente:paciente_id(nombre, apellido_paterno, apellido_materno), jornada:jornada_id(nombre, sede, fecha_etapa2))",
+      "folio_texto, servicio, sede, digito_verificador, activo, expediente:expediente_id(paciente:paciente_id(nombre, apellido_paterno, apellido_materno), jornada:jornada_id(nombre, sede, fecha_etapa2))",
     )
     .eq("id", folioId)
-    .eq("activo", true)
     .maybeSingle();
 
   const fila = data as unknown as FilaFolio | null;
@@ -53,6 +53,20 @@ export default async function PaginaImprimirFolio({
   const fechaEtapa2 = jornada?.fecha_etapa2
     ? new Date(jornada.fecha_etapa2).toLocaleDateString("es-MX", { dateStyle: "long" })
     : "Por confirmar";
+
+  if (!fila.activo) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-4 p-6 text-center">
+        <p className="text-2xl font-bold text-destructive">FOLIO ANULADO</p>
+        <p className="font-mono text-lg line-through">{fila.folio_texto}</p>
+        <p className="text-sm text-muted-foreground">
+          Este folio ya no es válido — el dictamen de {nombreCompleto} fue modificado después de
+          asignarlo. Consulta el expediente para ver el folio vigente, si aplica.
+        </p>
+      </div>
+    );
+  }
+
   const qrSvg = await generarQrSvg(fila.folio_texto);
 
   return (

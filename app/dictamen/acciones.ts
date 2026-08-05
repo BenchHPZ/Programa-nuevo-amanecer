@@ -109,3 +109,29 @@ export async function registrarDictamen(input: {
   const fila = Array.isArray(data) ? data[0] : data;
   return { exito: true, folioTexto: fila?.folio?.folio_texto ?? null };
 }
+
+/**
+ * Corrige un dictamen ya registrado (resultado y observaciones). Solo
+ * medico_triage/administrativo (RLS + tiene_rol en modificar_dictamen). Si
+ * la salida cambia de categoría de folio, la función anula el folio
+ * anterior (nunca se borra) y asigna uno nuevo en su propia serie.
+ */
+export async function modificarDictamen(input: {
+  expedienteId: string;
+  resultado: ResultadoDictamen;
+  observaciones: string;
+  recomendacion: string;
+}) {
+  const supabase = await crearClienteServidor();
+  const { data, error } = await supabase.rpc("modificar_dictamen", {
+    p_expediente_id: input.expedienteId,
+    p_resultado: input.resultado,
+    p_observaciones: input.observaciones.trim() || undefined,
+    p_recomendacion:
+      input.resultado === "no_apto" ? input.recomendacion.trim() || undefined : undefined,
+  });
+
+  if (error) return { error: error.message };
+  const fila = Array.isArray(data) ? data[0] : data;
+  return { exito: true, folioTexto: fila?.folio?.folio_texto ?? null };
+}

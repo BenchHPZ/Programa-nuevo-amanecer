@@ -1,7 +1,7 @@
 # Modelo de datos
 
 **Programa Nuevo Amanecer, A.C.**
-Versión 1.2 · 6 de agosto de 2026
+Versión 1.3 · 6 de agosto de 2026
 
 ---
 
@@ -125,7 +125,12 @@ dictamen_etapa1 (
                                       -- cirugia_leon (el enum crece cuando
                                       -- una edición necesita una salida nueva)
   observaciones, recomendacion,       -- recomendación de canalización (RF-142)
-  fecha, firma_archivo_path
+  fecha, firma_archivo_path,
+  modificado_por, modificado_en       -- autoría de una corrección posterior
+                                      -- al registro original (RF-146), null
+                                      -- si nunca se modificó — mismo patrón
+                                      -- que aprobado_por/aprobado_en en
+                                      -- usuario_perfil
 )
 
 -- Solo existe si el dictamen fue apto (RN-05).
@@ -146,6 +151,17 @@ un contador por jornada, servicio y sede, de modo que varios capturistas simult�
 colisiones ni huecos (RF-151). `sede` es `NOT NULL` con el sentinela `'general'` — nunca `NULL`,
 porque una columna en `NULL` no "empata" para el `UNIQUE`/`ON CONFLICT` que hace atómico el
 contador.
+
+**Modificar un dictamen ya registrado** (RF-146) usa `modificar_dictamen()`, no un segundo
+`INSERT` — `expediente_id` es `UNIQUE` en `dictamen_etapa1`, así que la corrección es siempre un
+`UPDATE` sobre la misma fila (permitido: la policy RLS de `UPDATE` sobre `dictamen_etapa1` existe
+desde el esquema base, aunque hasta esta función nada la usaba). Si la nueva salida implica un
+`(servicio, sede)` distinto al del folio ya asignado, `modificar_dictamen()` **anula** ese folio
+(`activo = false`, nunca se borra, RF-147) y llama a `asignar_folio()` de nuevo si la nueva salida
+también implica folio — nunca reutiliza el consecutivo anulado. El historial completo de qué
+decía el dictamen antes de cada corrección vive en `audit_log` vía el trigger genérico (§1.6); las
+columnas `modificado_por`/`modificado_en` solo exponen quién hizo la **última** modificación, para
+mostrarlo en la UI sin tener que consultar `audit_log`.
 
 ### Documentos
 
