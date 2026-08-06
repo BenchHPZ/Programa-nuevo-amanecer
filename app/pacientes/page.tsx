@@ -94,9 +94,9 @@ export default async function PaginaPacientes() {
                 <TableRow>
                   <TableHead>Paciente</TableHead>
                   <TableHead>Estado</TableHead>
+                  <TableHead>Acciones</TableHead>
                   <TableHead>Dictamen</TableHead>
                   <TableHead>Folio</TableHead>
-                  <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
