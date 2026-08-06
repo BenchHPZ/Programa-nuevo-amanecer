@@ -13,7 +13,7 @@ import { ETIQUETA_ESTADO, ETIQUETA_RESULTADO, ETIQUETA_SERVICIO } from "../admin
 
 export const dynamic = "force-dynamic";
 
-const POR_PAGINA = 50;
+const POR_PAGINA = 100;
 
 /**
  * Quién ve cada botón por fila — espejo en la UI de lo que las páginas de
@@ -115,21 +115,6 @@ export default async function PaginaPacientes() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {dictamen ? (
-                          ETIQUETA_RESULTADO[dictamen.resultado] ?? dictamen.resultado
-                        ) : (
-                          <span className="text-muted-foreground">Sin dictamen</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {folio ? `${folio.folio_texto}-${folio.digito_verificador}` : "—"}
-                        {folio ? (
-                          <span className="ml-1 text-xs text-muted-foreground">
-                            {ETIQUETA_SERVICIO[folio.servicio]}
-                          </span>
-                        ) : null}
-                      </TableCell>
-                      <TableCell>
                         <div className="flex justify-end gap-2">
                           {veCaptura && (
                             <Button
@@ -160,6 +145,21 @@ export default async function PaginaPacientes() {
                             Vista
                           </Button>
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {dictamen ? (
+                          ETIQUETA_RESULTADO[dictamen.resultado] ?? dictamen.resultado
+                        ) : (
+                          <span className="text-muted-foreground">Sin dictamen</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {folio ? `${folio.folio_texto}-${folio.digito_verificador}` : "—"}
+                        {folio ? (
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            {ETIQUETA_SERVICIO[folio.servicio]}
+                          </span>
+                        ) : null}
                       </TableCell>
                     </TableRow>
                   );
